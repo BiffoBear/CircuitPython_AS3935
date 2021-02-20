@@ -113,12 +113,11 @@ class AS3935:
 
     :param busio.SPI spi: The SPI bus connected to the chip.  Ensure SCK, MOSI, and MISO are
         connected.
-    :param ~digitalio.DigitalInOut cs: A DigitalInOut object connected to the chip's CS/chip
-        select line.
-    :param ~digitalio.DigitalInOut interrupt_pin: A DigitalInOut object connected to the chip's
-        interrupt line. Note that CircuitPython currently does not support interrupts, but the
-        line is held high for at least one second per event, so it may be polled. Some single
-        board computers, e.g. the Raspberry Pi, do support interrupts.
+    :param ~board.Pin cs: The pin connected to the chip's CS/chip select line.
+    :param ~board.Pin interrupt_pin: The pin connected to the chip's interrupt line. Note
+        that CircuitPython currently does not support interrupts, but the line is held high
+        for at least one second per event, so it may be polled. Some single board computers,
+        e.g. the Raspberry Pi, do support interrupts.
     :param int baudrate: Defaults to 2,000,000 which is the maximum supported by the chip. If
         another baudrate is selected, avoid +/- 500,000 as this will interfere with the chip's
         antenna.
