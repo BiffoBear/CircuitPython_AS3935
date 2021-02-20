@@ -86,7 +86,7 @@ Usage Example
         if sensor.interrupt_set:  # An event has occurred
             # The interrupt_status is cleared after a read, so assign it
             # to a variable in case you need the value later.
-            event_type = sensor.interrupt_status == sensor.STRIKE
+            event_type = sensor.interrupt_status == sensor.LIGHTNING
             if event_type == 0x08  # It's a lightning event
                 print(f"Strike Energy = {sensor.energy})
                 print(f"Distance to storm front = {sensor.distance} km")
