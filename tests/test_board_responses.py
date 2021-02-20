@@ -23,7 +23,6 @@ try:
 except ImportError:
     pass
 import board
-import digitalio
 
 try:
     from CircuitPython_AS3935 import biffobear_as3935 as as3935
@@ -52,13 +51,13 @@ def setup_module():
     global device
     spi = board.SPI()
     try:
-        cs = digitalio.DigitalInOut(board.D24)
-        interrupt = digitalio.DigitalInOut(board.D25)
+        cs = board.D24
+        interrupt = board.D25
     except AttributeError:
-        cs = digitalio.DigitalInOut(board.D5)
-        interrupt = digitalio.DigitalInOut(board.D7)
+        cs = board.D5
+        interrupt = board.D7
 
-    device = as3935.AS3935(spi, cs, interrupt=interrupt, baudrate=1_000_000)
+    device = as3935.AS3935(spi, cs, interrupt_pin=interrupt, baudrate=1_000_000)
     device.reset()
 
 
@@ -176,6 +175,11 @@ def test_registers_with_unpredictable_states():
     device.interrupt_status
 
 
+def test_read_interrupt_pin():
+    # The state of the pin is unknown, so just read it error free.
+    device.interrupt_set
+
+
 if __name__ == "__main__":
 
     print("setup...")
@@ -210,6 +214,8 @@ if __name__ == "__main__":
     test_commands_which_do_not_change_readable_values()
     print("registers_with_unpredictable_states...")
     test_registers_with_unpredictable_states()
+    print("Interrupt pin...")
+    test_read_interrupt_pin()
     print("teardown...")
     teardown_module()
     print("Tests complete.")
