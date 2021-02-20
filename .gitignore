@@ -20,3 +20,4 @@ venv/**
 .nova/**
 deploy.sh
 build.sh
+mpy-cross

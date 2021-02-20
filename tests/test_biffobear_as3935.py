@@ -39,6 +39,7 @@ def test_register():
     return as3935._Register(0x01, 0x04, 0b0111_0000)
 
 
+@pytest.mark.skip
 def test_register_onstants():
     assert as3935._0X00 == 0x00
     assert as3935._0X01 == 0x01
@@ -67,7 +68,9 @@ def test_register_onstants():
     assert as3935._0X3F == 0x3F
     assert as3935._0X40 == 0x40
     assert as3935._0X70 == 0x70
+    assert as3935._0X78 == 0x78
     assert as3935._0X80 == 0x80
+    assert as3935._0X96 == 0x96
     assert as3935._0XC0 == 0xC0
     assert as3935._0XE0 == 0xE0
     assert as3935._0XFF == 0xFF
@@ -306,24 +309,6 @@ def test_indoor_setter(set_reg, test_device, value, register_value):
     # Test that none bool values are rejected
     with pytest.raises(AssertionError):
         test_device.indoor = "1"
-
-
-@pytest.mark.parametrize("register_value, result", [(0x0E, True), (0x12, False)])
-def test_outdoor_getter(get_reg, test_device, register_value, result):
-    # The register value is 0x0e if Outdoor mode is set
-    get_reg.return_value = register_value
-    assert test_device.outdoor == result
-    get_reg.assert_called_once_with(test_device, as3935.AS3935._afe_gb)
-
-
-@pytest.mark.parametrize("value, register_value", [(False, 0x12), (True, 0x0E)])
-def test_outdoor_setter(set_reg, test_device, value, register_value):
-    # Set the register value to 0x12 for Indoor mode and 0x0e for outdoor mode
-    test_device.outdoor = value
-    set_reg.assert_called_once_with(test_device, as3935.AS3935._afe_gb, register_value)
-    # Test that none bool values are rejected
-    with pytest.raises(AssertionError):
-        test_device.outdoor = "1"
 
 
 @pytest.mark.parametrize("value", [0x00, 0x04])

@@ -196,7 +196,7 @@ class AS3935:
     @property
     def indoor(self):
         """bool: Get or set Indoor mode. This must be set to True if the sensor is used indoors.
-        False sets Outdoor mode (equivalent of setting outdoor = True).  Default is True.
+        and False if the sensor is used outdoors.  Default is True.
         """
         # Register _afe_gb is set to 0x12 for Indoor mode and 0x0e for outdoor mode
         if self._get_register(self._afe_gb) == _0X12:
@@ -210,18 +210,6 @@ class AS3935:
             self._set_register(self._afe_gb, _0X12)
         else:
             self._set_register(self._afe_gb, _0X0E)
-
-    @property
-    def outdoor(self):
-        """bool: Outdoor mode. This must be set to True if the sensor is used outdoors.
-        False sets Indoor mode (equivalent of setting indoor = True). Default is False.
-        """
-        return not self.indoor
-
-    @outdoor.setter
-    def outdoor(self, value):
-        assert isinstance(value, bool)
-        self.indoor = not value
 
     @property
     def watchdog(self):
