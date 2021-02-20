@@ -21,6 +21,9 @@ Introduction
 
 CircuitPython driver library for the AS3935 lightning detector.
 
+.. warning:: The AS3935 chip supports I2C but Sparkfun found it unreliable so
+   this driver is SPI only.
+
 
 Dependencies
 =============
@@ -37,8 +40,6 @@ or individual libraries can be installed using
 =====================
 .. note:: This library is not available on PyPI yet. Install documentation is included
    as a standard element. Stay tuned for PyPI availability!
-
-.. todo:: Remove the above note if PyPI version is/will be available at time of release.
 
 On supported GNU/Linux systems like the Raspberry Pi, you can install the driver locally `from
 PyPI <https://pypi.org/project/adafruit-circuitpython-as3935/>`_.
@@ -68,8 +69,27 @@ To install in a virtual environment in your current project:
 Usage Example
 =============
 
-.. todo:: Add a quick, simple example. It and other examples should live in the
-examples folder and be included in docs/examples.rst.
+.. code-block:: python
+    
+    import time
+    import board
+    import biffobear_as3935
+    
+    spi = board.SPI  # Works for most Adafruit and Blinka boards.
+    # Edit the pins to match the connections to your board.
+    cs_pin = board
+    interrupt_pin = board(D7)  # Connected to the sensor interrupt pin
+    
+    sensor = biffo_bear_as3935(spi, cs_pin, interrupt_pin=interrupt_pin)
+    
+    while True:
+        if sensor.interrupt_set:  # An event has occurred
+            if sensor.interrupt_status == 0x08  # It's a lightning event
+                print(f"Strike Energy = {sensor.energy})
+                print(f"Distance to storm front = {sensor.distance} km")
+        time.sleep(0.5)  # Minimum time between strike events is 1 second
+        
+
 
 Contributing
 ============
