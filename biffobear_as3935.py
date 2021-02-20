@@ -1,4 +1,3 @@
-# SPDX-FileCopyrightText: 2017 Scott Shawcroft, written for Adafruit Industries
 # SPDX-FileCopyrightText: Copyright (c) 2021 Martin Stephens
 #
 # SPDX-License-Identifier: MIT
@@ -116,10 +115,10 @@ class AS3935:
         connected.
     :param ~digitalio.DigitalInOut cs: A DigitalInOut object connected to the chip's CS/chip
         select line.
-    :param ~digitalio.DigitalInOut interrupt: A DigitalInOut object connected to the chip's
+    :param ~digitalio.DigitalInOut interrupt_pin: A DigitalInOut object connected to the chip's
         interrupt line. Note that CircuitPython currently does not support interrupts, but the
-        line is held high for at least one second per event, so it may be polled. This line is
-        also used for antenna tuning and can output clock frequencies so it must be connected.
+        line is held high for at least one second per event, so it may be polled. Some single
+        board computers, e.g. the Raspberry Pi, do support interrupts.
     :param int baudrate: Defaults to 2,000,000 which is the maximum supported by the chip. If
         another baudrate is selected, avoid +/- 500,000 as this will interfere with the chip's
         antenna.

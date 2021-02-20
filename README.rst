@@ -39,7 +39,7 @@ or individual libraries can be installed using
 `circup <https://github.com/adafruit/circup>`_.Installing from PyPI
 =====================
 .. note:: This library is not available on PyPI yet. Install documentation is included
-   as a standard element. Stay tuned for PyPI availability!
+as a standard element. Stay tuned for PyPI availability!
 
 On supported GNU/Linux systems like the Raspberry Pi, you can install the driver locally `from
 PyPI <https://pypi.org/project/adafruit-circuitpython-as3935/>`_.
@@ -77,17 +77,23 @@ Usage Example
     
     spi = board.SPI  # Works for most Adafruit and Blinka boards.
     # Edit the pins to match the connections to your board.
-    cs_pin = board
-    interrupt_pin = board(D7)  # Connected to the sensor interrupt pin
+    cs_pin = board  # Connect to the sensor chip select pin.
+    interrupt_pin = board(D7)  # Connected to the sensor interrupt pin.
     
     sensor = biffo_bear_as3935(spi, cs_pin, interrupt_pin=interrupt_pin)
     
     while True:
         if sensor.interrupt_set:  # An event has occurred
-            if sensor.interrupt_status == 0x08  # It's a lightning event
+            # The interrupt_status is cleared after a read, so assign it
+            # to a variable in case you need the value later.
+            event_type = sensor.interrupt_status == sensor.STRIKE
+            if event_type == 0x08  # It's a lightning event
                 print(f"Strike Energy = {sensor.energy})
                 print(f"Distance to storm front = {sensor.distance} km")
-        time.sleep(0.5)  # Minimum time between strike events is 1 second
+            elif event_type == sensor.DISTURBER:
+                print("False alarm")
+        # Minimum time between strike events is 1 second so poll frequently!
+        time.sleep(0.5)
         
 
 

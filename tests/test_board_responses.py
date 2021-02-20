@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2021 Martin Stephens
+#
+# SPDX-License-Identifier: MIT
 """These tests are run with a sensor connected to confirm that the correct
 responses are received from the sensor.
 

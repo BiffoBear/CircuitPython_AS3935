@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2021 Martin Stephens
+#
+# SPDX-License-Identifier: MIT
 import time
 from collections import namedtuple
 from random import random
