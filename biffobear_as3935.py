@@ -107,9 +107,9 @@ def _value_is_in_range(value, *, lo_limit, hi_limit):
 class AS3935:
     """Supports the AS3935 lightning detector chip via the SPI interface. Allows
     monitoring for lightning events by polling an 'interrupt' pin that is held high for one
-    second after an event. Also supports reading of the number of events, strength of the last
-    strike and estimated distance to the storm front. Clock calibration, antenna trimming and
-    other settings are also implemented.
+    second after an event. Also supports reading strength of the last strike and estimated
+    distance to the storm front. Antenna trimming, clock calibration, etc. are also
+    implemented.
 
     :param busio.SPI spi: The SPI bus connected to the chip.  Ensure SCK, MOSI, and MISO are
         connected.
