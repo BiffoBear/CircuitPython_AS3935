@@ -1,6 +1,10 @@
 # SPDX-FileCopyrightText: Copyright (c) 2021 Martin Stephens
 #
 # SPDX-License-Identifier: Unlicense
+
+"""Loop and wait for an event. Note that the sensor only responds
+to lightning, so unless it is stormy, there's not much to see here.
+"""
 import time
 import board
 import biffobear_as3935
