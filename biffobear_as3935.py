@@ -21,7 +21,7 @@ Implementation Notes
 * SparkFun Lightning Detector - AS3935:
   https://www.sparkfun.com/products/15441
 
-* AS3935 Datasheet at Sparkfun
+* AS3935 Datasheet at Sparkfun:
   https://cdn.sparkfun.com/assets/learn_tutorials/9/2/1/AS3935_Datasheet_EN_v2.pdf
 
 **Software and Dependencies:**
@@ -105,9 +105,9 @@ def _value_is_in_range(value, *, lo_limit, hi_limit):
 
 
 class AS3935:
-    """Supports the AS3935 lightning detector chip via the SPI interface. Allows
+    """Supports the Franklin AS3935 lightning detector chip via the SPI interface. Allows
     monitoring for lightning events by polling an 'interrupt' pin that is held high for one
-    second after an event. Also supports reading strength of the last strike and estimated
+    second after an event. Allows reading strength of the last strike and estimated
     distance to the storm front. Antenna trimming, clock calibration, etc. are also
     implemented.
 
@@ -225,8 +225,8 @@ class AS3935:
 
     @property
     def watchdog(self):
-        """int: Get or set the watchdog threshold. Higher thresholds decrease triggers by
-        disturbers but reduce sensitivity to lightning strikes.
+        """int: Watchdog threshold. Higher thresholds decrease triggers by disturbers
+        but reduce sensitivity to lightning strikes.
 
         Integer in the range 0 - 10. Default is 2.
         """
@@ -284,7 +284,7 @@ class AS3935:
     def distance(self):
         """int: Estimated distance to the storm front (km).
 
-        note:: Returns None if storm front is out of range (> 40 km).
+        Returns None if storm front is out of range (> 40 km).
         """
         distance = self._get_register(self._distance)
         if distance == 0x3F:  # Storm out of range
@@ -297,13 +297,13 @@ class AS3935:
     def interrupt_status(self):
         """int: Status of the interrupt register.
 
-        note:: The following class constants are defined as helpers:
+        The following class constants are defined as helpers:
         DATA_PURGE = 0x00  # Distance recalculated after purging old data.
         NOISE = 0x01  # INT_NH Noise level too high. Stays high while noise remains.
         DISTURBER = 0x04  # INT_D  Disturber detected.
         LIGHTNING = 0x08  # INT_L  Lightning strike.
 
-        warning:: This register is cleared after it is read.
+        This register is cleared after it is read.
         """
         # Wait a minimum of 2 ms between the interrupt pin going high and reading the register.
         time.sleep(0.0002)
@@ -474,7 +474,7 @@ class AS3935:
         False if the pin is low and None if the pin is set to output a clock or
         antenna frequency.
 
-        note:: The interrupt pin is held high for 1.0 second after a lightning event.
+        The interrupt pin is held high for 1.0 second after a lightning event.
         The interrupt pin is held high for 1.5 seconds after a disturber event.
         The interrupt pin is held high for the duration of high noise.
         """

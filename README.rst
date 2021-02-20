@@ -36,10 +36,12 @@ Please ensure all dependencies are available on the CircuitPython filesystem.
 This is easily achieved by downloading
 `the Adafruit library and driver bundle <https://circuitpython.org/libraries>`_
 or individual libraries can be installed using
-`circup <https://github.com/adafruit/circup>`_.Installing from PyPI
+`circup <https://github.com/adafruit/circup>`_.
+
+Installing from PyPI
 =====================
 .. note:: This library is not available on PyPI yet. Install documentation is included
-as a standard element. Stay tuned for PyPI availability!
+    as a standard element. Stay tuned for PyPI availability!
 
 On supported GNU/Linux systems like the Raspberry Pi, you can install the driver locally `from
 PyPI <https://pypi.org/project/adafruit-circuitpython-as3935/>`_.
@@ -77,8 +79,8 @@ Usage Example
     
     spi = board.SPI  # Works for most Adafruit and Blinka boards.
     # Edit the pins to match the connections to your board.
-    cs_pin = board  # Connect to the sensor chip select pin.
-    interrupt_pin = board(D7)  # Connected to the sensor interrupt pin.
+    cs_pin = digitalio.DigitalInOut(board.D5)  # Connect to the sensor chip select pin.
+    interrupt_pin = digitalio.DigitalInOut(board.D7)  # Connected to the sensor interrupt pin.
     
     sensor = biffo_bear_as3935(spi, cs_pin, interrupt_pin=interrupt_pin)
     
