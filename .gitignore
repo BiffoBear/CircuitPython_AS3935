@@ -18,3 +18,5 @@ dist
 .vscode
 venv/**
 .nova/**
+deploy.sh
+build.sh

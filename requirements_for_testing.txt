@@ -1,6 +1,0 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021 Martin Stephens
-#
-# SPDX-License-Identifier: MIT
-
-pytest
-pytest-mock
