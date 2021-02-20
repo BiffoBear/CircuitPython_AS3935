@@ -43,6 +43,9 @@ import adafruit_bus_device.spi_device as spi_dev
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/BiffoBear/Biffobear_CircuitPython_AS3935.git"
 
+# Data structure for storing the sensor register details.
+Register = namedtuple("Register", ["addr", "offset", "mask"])
+
 # Internal constants:
 # Constants for addresses and masks
 _0X00 = const(0x00)

@@ -3,7 +3,7 @@ from collections import namedtuple
 from random import random
 from unittest.mock import PropertyMock
 import pytest
-from .. import biffobear_as3935 as as3935
+from CircuitPython_AS3935 import biffobear_as3935 as as3935
 
 
 @pytest.fixture
@@ -180,6 +180,8 @@ def test_read_byte_in_sets_correct_bits_for_read_address(test_device, address, b
 
 @pytest.mark.skip(reason="I don't know how to return a mock value for this.")
 def test_read_byte_in_populates_data_buffer():
+    # It would be nice to have a test for this. Meanwhile any problems will
+    # be seen when testing with an attached sensor.
     pass
 
 
