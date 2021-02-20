@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2017 Scott Shawcroft, written for Adafruit Industries
+# SPDX-FileCopyrightText: 2021 Martin Stephens
 #
 # SPDX-License-Identifier: Unlicense
 
@@ -16,3 +16,5 @@ bundles
 dist
 **/*.egg-info
 .vscode
+venv/**
+.nova/**
