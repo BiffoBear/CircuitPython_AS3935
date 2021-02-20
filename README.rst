@@ -91,14 +91,14 @@ Usage Example
     import time
     import board
     import biffobear_as3935
-    
+
     spi = board.SPI()  # Works for most Adafruit and Blinka boards.
     # Edit the following pins to match the connections to your board.
     cs_pin = board.D5  # Connect to the sensor chip select pin.
     interrupt = board.D7  # Connected to the sensor interrupt pin.
-    
+
     sensor = biffobear_as3935.AS3935(spi, cs_pin, interrupt_pin=interrupt)
-    
+
     while True:
         if sensor.interrupt_set:  # An event has occurred
             # The interrupt_status is cleared after a read, so assign it
