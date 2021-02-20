@@ -36,10 +36,12 @@ Please ensure all dependencies are available on the CircuitPython filesystem.
 This is easily achieved by downloading
 `the Adafruit library and driver bundle <https://circuitpython.org/libraries>`_
 or individual libraries can be installed using
-`circup <https://github.com/adafruit/circup>`_.Installing from PyPI
+`circup <https://github.com/adafruit/circup>`_.
+
+Installing from PyPI
 =====================
 .. note:: This library is not available on PyPI yet. Install documentation is included
-as a standard element. Stay tuned for PyPI availability!
+    as a standard element. Stay tuned for PyPI availability!
 
 On supported GNU/Linux systems like the Raspberry Pi, you can install the driver locally `from
 PyPI <https://pypi.org/project/adafruit-circuitpython-as3935/>`_.
@@ -64,6 +66,21 @@ To install in a virtual environment in your current project:
     source .env/bin/activate
     pip3 install adafruit-circuitpython-as3935
 
+
+Running The Unittests
+=====================
+
+To run the unittests on you will need to install Pytest and Pytest Mock.
+
+.. code-block:: shell
+
+    pip3 install pytest pytest-mock
+
+To install system-wide (this may be required in some cases):
+
+.. code-block:: shell
+
+    sudo pip3 install pytest pytest-mock
 
 
 Usage Example

@@ -5,6 +5,7 @@
 # Build script for running black, pylint and sphinx before major commits
 black .
 pylint biffobear_as3935.py
+python -m pytest
 cd docs
 sphinx-build -E -W -b html  . _build/html
 cd ..
