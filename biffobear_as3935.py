@@ -127,6 +127,14 @@ class AS3935:
     # Global bufferS for SPI commands and address.
     _ADDR_BUFFER = bytearray(1)
     _DATA_BUFFER = bytearray(1)
+    
+    # Constants to make register values human readable in the code
+    DATA_PURGE = 0x00  # 0x00 - Distance recalculated after purging old data.
+    NOISE = 0x01  # 0x01 - INT_NH Noise level too high. Stays high while noise remains.
+    DISTURBER = 0x04  # 0x04 - INT_D  Disturber detected.
+    LIGHTNING = 0x08  # 0x08 - INT_L  Lightning strike.
+
+
 
     # AS3935 registers
     _pwd = Register(_0X00, _0X00, _0X01)
@@ -294,13 +302,9 @@ class AS3935:
 
     @property
     def interrupt_status(self):
-        """Get the status of the interrupt register. The register is reset after
-        it is read.
+        """Get the status of the interrupt register.
 
-        Note:: 0x01 - INT_NH Noise level too high. Stays high while noise remains.
-               0x04 - INT_D  Disturber detected.
-               0x08 - INT_L  Lightning interrupt.
-               0x00 - Distance recalculated after purging old data.
+        warning:: This register is cleared after it is read.
         """
         # Wait a minimum of 2 ms between the interrupt pin going high and reading the register.
         time.sleep(0.0002)

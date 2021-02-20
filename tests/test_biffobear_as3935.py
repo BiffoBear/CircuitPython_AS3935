@@ -70,6 +70,14 @@ def test_register_onstants():
 def test_other_constants():
     assert as3935._LIGHTNING_COUNT == (1, 5, 9, 16)
     assert as3935._FREQ_DIVISOR == (16, 32, 64, 128)
+    # 0x00 - Distance recalculated after purging old data.
+    assert as3935.AS3935.DATA_PURGE == 0x00
+    # 0x01 - INT_NH Noise level too high. Stays high while noise remains.
+    assert as3935.AS3935.NOISE == 0x01
+    # 0x04 - INT_D  Disturber detected.
+    assert as3935.AS3935.DISTURBER == 0x04
+    # 0x08 - INT_L  Lightning strike.
+    assert as3935.AS3935.LIGHTNING == 0x08
 
 
 def test_spi_command_buffers():
