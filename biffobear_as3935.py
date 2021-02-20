@@ -195,10 +195,8 @@ class AS3935:
 
     @property
     def indoor(self):
-        """Get or set Indoor mode. This must be set to True if the sensor is used indoors.
-
-        param: bool value: True sets Indoor mode, False sets Outdoor mode (equivalent of
-            setting outdoor = True).  Defaulf is Indoor.
+        """bool: Get or set Indoor mode. This must be set to True if the sensor is used indoors.
+        False sets Outdoor mode (equivalent of setting outdoor = True).  Default is True.
         """
         # Register _afe_gb is set to 0x12 for Indoor mode and 0x0e for outdoor mode
         if self._get_register(self._afe_gb) == _0X12:
@@ -215,10 +213,8 @@ class AS3935:
 
     @property
     def outdoor(self):
-        """Get or set Outdoor mode. This must be set to True if the sensor is used outdoors.
-
-        param: bool value: True sets Outdoor mode, False sets Indoor mode (equivalent of
-            setting indoor = True). Defaulf is Indoor.
+        """bool: Outdoor mode. This must be set to True if the sensor is used outdoors.
+        False sets Indoor mode (equivalent of setting indoor = True). Default is False.
         """
         return not self.indoor
 
@@ -229,10 +225,10 @@ class AS3935:
 
     @property
     def watchdog(self):
-        """Get or set the watchdog threshold. Higher thresholds decrease triggers by
+        """int: Get or set the watchdog threshold. Higher thresholds decrease triggers by
         disturbers but reduce sensitivity to lightning strikes.
 
-        param: int value: Integer in the range 0x00 - 0x0a. Default is 0x02.
+        Integer in the range 0 - 10. Default is 2.
         """
         return self._get_register(self._wdth)
 
@@ -244,11 +240,11 @@ class AS3935:
 
     @property
     def noise_floor_limit(self):
-        """Get or set the noise floor limit threshold. When this threshold is
+        """int: Get or set the noise floor limit threshold. When this threshold is
         exceeded, an interrupt is issued. Higher values allow operation with
-        higher background noise.
+        higher background noise but decrease sensitivity.
 
-        param: int value: Integer in the range 0x00 - 0x07. Default is 0x02.
+        Integer in the range 0 - 7. Default is 2.
         """
         return self._get_register(self._nf_lev)
 
@@ -260,10 +256,10 @@ class AS3935:
 
     @property
     def spike_threshold(self):
-        """Get or set the spike rejection threshold. Higher values reduce
-        false triggers but reduces sensitivity.
+        """int: Get or set the spike rejection threshold. Higher values reduce
+        false triggers but reduce sensitivity.
 
-        param: int value: Integer in the range 0x00 - 0x0b. Default is 0x02.
+        Integer in the range 0 - 10. Default is 2.
         """
         return self._get_register(self._srej)
 
@@ -276,7 +272,7 @@ class AS3935:
 
     @property
     def energy(self):
-        """Get the calculated energy of the last lightning strike. This is a
+        """int: The calculated energy of the last lightning strike. This is a
         dimensionless number.
         """
         mmsb = self._get_register(self._s_lig_mm)
@@ -286,10 +282,9 @@ class AS3935:
 
     @property
     def distance(self):
-        """Get estimated distance to storm front.
+        """int: Estimated distance to the storm front (km).
 
-        param: int value: Estimated distance to the storm front in km. Returns
-            None if storm is out of range (> 40 km).
+        note:: Returns None if storm front is out of range (> 40 km).
         """
         distance = self._get_register(self._distance)
         if distance == 0x3F:  # Storm out of range
@@ -300,7 +295,13 @@ class AS3935:
 
     @property
     def interrupt_status(self):
-        """Get the status of the interrupt register.
+        """int: Status of the interrupt register.
+
+        note:: The following class constants are defined as helpers:
+        DATA_PURGE = 0x00  # Distance recalculated after purging old data.
+        NOISE = 0x01  # INT_NH Noise level too high. Stays high while noise remains.
+        DISTURBER = 0x04  # INT_D  Disturber detected.
+        LIGHTNING = 0x08  # INT_L  Lightning strike.
 
         warning:: This register is cleared after it is read.
         """
@@ -310,11 +311,8 @@ class AS3935:
 
     @property
     def disturber_mask(self):
-        """Get or set disturber mask. If the mask is set, disturber events do not
-        cause interrupts.
-
-        param: bool value: True to suppress disturber event interrupts. False to
-        allow them.
+        """bool: Disturber mask. If the mask is True, disturber events do not
+        cause interrupts. Default is False.
         """
         return bool(self._get_register(self._mask_dist))
 
@@ -327,11 +325,11 @@ class AS3935:
 
     @property
     def strike_count_threshold(self):
-        """Get or set lightning strike count threshold. The minimum number of
-        lightning events before the interrupt is triggered. The threshold is
-        reset to the default value after being triggered.
+        """int: Lightning strike count threshold. The minimum number of
+        lightning events before the interrupt is triggered. This threshold is
+        reset to the default value of 1 after being triggered.
 
-        param: int value: 1, 5, 9, or 16. Default is 1.
+        Threshold may be 1, 5, 9, or 16. Default is 1.
         """
         # Convert the register value to the threshold.
         return _LIGHTNING_COUNT[self._get_register(self._min_num_ligh)]
@@ -343,14 +341,17 @@ class AS3935:
         )
 
     def clear_stats(self):
-        """Clear statistics from lightning distance emulation block."""
+        """Clear statistics from lightning distance emulation block. This resets the
+        data used to calculate the distance to the storm fron.
+        """
         self._set_register(self._cl_stat, 0x01)
         self._set_register(self._cl_stat, 0x00)
         self._set_register(self._cl_stat, 0x01)
 
     @property
     def power_down(self):
-        """Get power status. If True, the unit is powered off."""
+        """bool: Power status. If True, the unit is powered off although the SPI bus remains
+        active."""
         return bool(self._get_register(self._pwd))
 
     @power_down.setter
@@ -370,11 +371,10 @@ class AS3935:
 
     @property
     def freq_divisor(self):
-        """Get or set the antenna frequency divisor applied to the antenna
-        resonant frequency output to the interrupt pin during antenna
-        tuning.
+        """int: Antenna frequency divisor. The antenna resonant frequency is divided by
+        this value whenever it is output as a square wave on the interrupt pin.
 
-        param: int value: 16, 32, 64, or 128. Default is 16.
+        Value must be one of 16, 32, 64, or 128. Default is 16.
         """
         # Convert the register value to the divisor.
         return _FREQ_DIVISOR[self._get_register(self._lco_fdiv)]
@@ -387,13 +387,8 @@ class AS3935:
 
     @property
     def output_antenna_freq(self):
-        """Get or set antenna tuning mode flag. If the flag is set, the antenna's
-        resonant frequency is output to the interrupt pin.
-
-        Note:: Output frequncy is divided by the divisor set in 'freq-divisor.'
-
-        param: bool value: True to enable antenna tuning mode. False to
-        disable it.
+        """bool: When True, the antenna resonant frequency is divided by the freq_divisor
+        and output as a square wave on the interrupt pin. Default is False.
         """
         # Convert bit 3 status to bool
         return self._get_register(self._disp_flags) == 4
@@ -407,11 +402,8 @@ class AS3935:
 
     @property
     def output_srco(self):
-        """Get or set output SRCO clock flag. If the flag is set, the SRCO clock signal
-        is output on the interrupt pin.
-
-        param: bool value: True to output SRCO clock. False to allow normal interrupt
-        operation.
+        """bool: When True, output the SRCO clock signal on the interrupt pin.
+        Default is False.
         """
         # Convert bit 2 status to bool
         return self._get_register(self._disp_flags) == 2
@@ -425,11 +417,8 @@ class AS3935:
 
     @property
     def output_trco(self):
-        """Get or set output TRCO clock flag. If the flag is set, the TRCO clock signal
-        is output on the interrupt pin.
-
-        param: bool value: True to output TRCO clock. False to allow normal interrupt
-        operation.
+        """bool: When True, output the TRCO clock signal on the interrupt pin.
+        Default is False.
         """
         # Convert bit 1 status to bool
         return self._get_register(self._disp_flags) == 1
@@ -443,10 +432,12 @@ class AS3935:
 
     @property
     def tuning_capacitance(self):
-        """Get or set the tuning capacitance for the lightning antenna.
+        """int: The tuning capacitance for the RLC antenna in pF. This capacitance
+        is added to the antenna to tune it within 3.5 % of 500 kHz (483 - 517 kHz).
 
-        param: int value: Capacitance to add, between 0 and 120 pF. Rounded down to
-        the nearest multiple of 8.
+        Values must be in the range 0 - 120. Any of these values may be set, but the
+        capacitance is in steps of 8, so values less than 120 will be rounded down to
+        the nearest step. Default is 0.
         """
         return self._get_register(self._tun_cap) * 8
 
@@ -474,17 +465,18 @@ class AS3935:
             raise RuntimeError("AS3935 RCO calibration failed.")
 
     def reset(self):
-        """Reset all settings to manfacturer defaults."""
+        """Reset all the settings to the manufacturer's defaults."""
         self._set_register(self._preset_default, 0x96)
 
     @property
     def interrupt_set(self):
-        """The state of the interrupt pin returns True if the pin is high, False if the
-        pin is low and None if the pin is set to output a clock or antenna frequency.
+        """bool: The state of the interrupt pin. Returns True if the pin is high,
+        False if the pin is low and None if the pin is set to output a clock or
+        antenna frequency.
 
-        Note:: The interrupt pin is held high for 1.0 second after a lightning event.
-        Note:: The interrupt pin is held high for 1.5 seconds after a disturber event.
-        Note:: The interrupt pin is held high for the duration of high noise.
+        note:: The interrupt pin is held high for 1.0 second after a lightning event.
+        The interrupt pin is held high for 1.5 seconds after a disturber event.
+        The interrupt pin is held high for the duration of high noise.
         """
         if self._get_register(self._disp_flags):
             return None
