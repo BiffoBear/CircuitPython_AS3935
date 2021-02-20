@@ -1,6 +1,12 @@
 # SPDX-FileCopyrightText: Copyright (c) 2021 Martin Stephens
 #
 # SPDX-License-Identifier: MIT
+
+# Many Pylnt conventions are broken for the sake of test readability
+# Others fail because Pylint doesn't understand Pytest.
+# Therefore skip this file.
+# pylint: skip-file
+
 import time
 from collections import namedtuple
 from random import random

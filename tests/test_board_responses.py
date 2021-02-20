@@ -5,10 +5,16 @@
 responses are received from the sensor.
 
 The try - except clauses and an if __name__ == "__main__" allow the code to be
-run with pytest on a Raspberry Pi or as a stand allow file copied into main.py
-on a CircuitPython board. To run on a board also copy 'biffobear_as3935.py to
+run with pytest on a Raspberry Pi or as a stand alone file copied into main.py
+on a CircuitPython board. To run on a board also copy 'biffobear_as3935.py' to
 the lib folder.
 """
+
+# Many Pylnt conventions are broken for the sake of test readability
+# Others fail because Pylint doesn't understand Pytest.
+# Therefore skip this file.
+# pylint: skip-file
+
 import os
 import time
 
