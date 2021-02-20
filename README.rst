@@ -93,9 +93,9 @@ Usage Example
     import biffobear_as3935
     
     spi = board.SPI  # Works for most Adafruit and Blinka boards.
-    # Edit the pins to match the connections to your board.
-    cs_pin = board  # Connect to the sensor chip select pin.
-    interrupt_pin = board(D7)  # Connected to the sensor interrupt pin.
+    # Edit the following pins to match the connections to your board.
+    cs_pin = digitalio.DigitalInOut(board.D5)  # Connect to the sensor chip select pin.
+    interrupt_pin = digitalio.DigitalInOut(board.D7)  # Connected to the sensor interrupt pin.
     
     sensor = biffo_bear_as3935(spi, cs_pin, interrupt_pin=interrupt_pin)
     
