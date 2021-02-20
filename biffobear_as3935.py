@@ -43,7 +43,7 @@ __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/BiffoBear/Biffobear_CircuitPython_AS3935.git"
 
 # Data structure for storing the sensor register details.
-Register = namedtuple("Register", ["addr", "offset", "mask"])
+_Register = namedtuple("Register", ["addr", "offset", "mask"])
 
 # Internal constants:
 # Constants for addresses and masks
@@ -127,38 +127,36 @@ class AS3935:
     # Global bufferS for SPI commands and address.
     _ADDR_BUFFER = bytearray(1)
     _DATA_BUFFER = bytearray(1)
-    
+
     # Constants to make register values human readable in the code
     DATA_PURGE = 0x00  # 0x00 - Distance recalculated after purging old data.
     NOISE = 0x01  # 0x01 - INT_NH Noise level too high. Stays high while noise remains.
     DISTURBER = 0x04  # 0x04 - INT_D  Disturber detected.
     LIGHTNING = 0x08  # 0x08 - INT_L  Lightning strike.
 
-
-
     # AS3935 registers
-    _pwd = Register(_0X00, _0X00, _0X01)
-    _afe_gb = Register(_0X00, _0X01, _0X3E)
-    _wdth = Register(_0X01, _0X00, _0X0F)
-    _nf_lev = Register(_0X01, _0X04, _0X70)
-    _srej = Register(_0X02, _0X00, _0X0F)
-    _min_num_ligh = Register(_0X02, _0X04, _0X30)
-    _cl_stat = Register(_0X02, _0X06, _0X40)
-    _int = Register(_0X03, _0X00, _0X0F)
-    _mask_dist = Register(_0X03, _0X05, _0X20)
-    _lco_fdiv = Register(_0X03, _0X06, _0XC0)
-    _s_lig_l = Register(_0X04, _0X00, _0XFF)
-    _s_lig_m = Register(_0X05, _0X00, _0XFF)
-    _s_lig_mm = Register(_0X06, _0X00, _0X1F)
-    _distance = Register(_0X07, _0X00, _0X3F)
-    _tun_cap = Register(_0X08, _0X00, _0X0F)
-    _disp_flags = Register(_0X08, 0x05, _0XE0)
-    _trco_calib_nok = Register(_0X3A, _0X06, _0X40)
-    _trco_calib_done = Register(_0X3A, _0X07, _0X80)
-    _srco_calib_nok = Register(_0X3B, _0X06, _0X40)
-    _srco_calib_done = Register(_0X3B, _0X07, _0X80)
-    _preset_default = Register(_0X3C, _0X00, _0XFF)
-    _calib_rco = Register(_0X3D, _0X00, _0XFF)
+    _pwd = _Register(_0X00, _0X00, _0X01)
+    _afe_gb = _Register(_0X00, _0X01, _0X3E)
+    _wdth = _Register(_0X01, _0X00, _0X0F)
+    _nf_lev = _Register(_0X01, _0X04, _0X70)
+    _srej = _Register(_0X02, _0X00, _0X0F)
+    _min_num_ligh = _Register(_0X02, _0X04, _0X30)
+    _cl_stat = _Register(_0X02, _0X06, _0X40)
+    _int = _Register(_0X03, _0X00, _0X0F)
+    _mask_dist = _Register(_0X03, _0X05, _0X20)
+    _lco_fdiv = _Register(_0X03, _0X06, _0XC0)
+    _s_lig_l = _Register(_0X04, _0X00, _0XFF)
+    _s_lig_m = _Register(_0X05, _0X00, _0XFF)
+    _s_lig_mm = _Register(_0X06, _0X00, _0X1F)
+    _distance = _Register(_0X07, _0X00, _0X3F)
+    _tun_cap = _Register(_0X08, _0X00, _0X0F)
+    _disp_flags = _Register(_0X08, 0x05, _0XE0)
+    _trco_calib_nok = _Register(_0X3A, _0X06, _0X40)
+    _trco_calib_done = _Register(_0X3A, _0X07, _0X80)
+    _srco_calib_nok = _Register(_0X3B, _0X06, _0X40)
+    _srco_calib_done = _Register(_0X3B, _0X07, _0X80)
+    _preset_default = _Register(_0X3C, _0X00, _0XFF)
+    _calib_rco = _Register(_0X3D, _0X00, _0XFF)
 
     def __init__(self, spi, cs, *, interrupt_pin, baudrate=2_000_000):
         self._device = spi_dev.SPIDevice(

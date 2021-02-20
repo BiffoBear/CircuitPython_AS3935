@@ -30,7 +30,7 @@ def test_device(mocker):
 @pytest.fixture
 def test_register():
     # Returns an instance of the Register named tuple
-    return as3935.Register(0x01, 0x04, 0b0111_0000)
+    return as3935._Register(0x01, 0x04, 0b0111_0000)
 
 
 def test_register_onstants():
@@ -163,7 +163,7 @@ def test_init_calls(mocker, spi_dev, spi, cs, interrupt, int_pin):
 
 
 def test_read_byte_in_calls_spi_dev_write_with_correct_kwargs(test_device):
-    test_register = as3935.Register(0x01, 0x04, 0b0111_0000)
+    test_register = as3935._Register(0x01, 0x04, 0b0111_0000)
     test_device._read_byte_in(test_register)
     name, _, kwargs = test_device._device.__enter__.return_value.mock_calls[0]
     assert name == "write"
@@ -181,7 +181,7 @@ def test_read_byte_in_calls_spi_dev_readinto_with_correct_kwargs(
 
 @pytest.mark.parametrize("address, buffer", [(0x0F, 0x4F), (0x3F, 0x7F), (0xF0, 0x70)])
 def test_read_byte_in_sets_correct_bits_for_read_address(test_device, address, buffer):
-    test_register = as3935.Register(address, 0x04, 0b0111_0000)
+    test_register = as3935._Register(address, 0x04, 0b0111_0000)
     test_device._read_byte_in(test_register)
     name, args, _ = test_device._device.__enter__.return_value.mock_calls[0]
     assert test_device._ADDR_BUFFER[0] == buffer
@@ -212,7 +212,7 @@ def test_write_byte_out_calls_spi_dev_write_with_correct_kwargs(
 def test_write_byte_out_sets_correct_bits_for_write_address(
     test_device, address, buffer
 ):
-    test_register = as3935.Register(address, 0x04, 0b0111_0000)
+    test_register = as3935._Register(address, 0x04, 0b0111_0000)
     test_device._write_byte_out(test_register, 0b0000_0101)
     assert test_device._ADDR_BUFFER[0] == buffer
     name, args, _ = test_device._device.__enter__.return_value.mock_calls[0]
