@@ -18,11 +18,7 @@ Implementation Notes
 
 **Hardware:**
 
-* SparkFun Lightning Detector - AS3935:
-  https://www.sparkfun.com/products/15441
-
-* AS3935 Datasheet at Sparkfun:
-  https://cdn.sparkfun.com/assets/learn_tutorials/9/2/1/AS3935_Datasheet_EN_v2.pdf
+* SparkFun Lightning Detector - AS3935: https://www.sparkfun.com/products/15441
 
 **Software and Dependencies:**
 
