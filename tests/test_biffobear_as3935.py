@@ -30,6 +30,7 @@ def test_device(mocker):
     # Returns an instance of the AS3935 driver with SDIDevice patched.
     mocker.patch.object(as3935.spi_dev, "SPIDevice")
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
+    mocker.patch.object(as3935.AS3935, "_spi_device_exists", return_value=None)
     return as3935.AS3935("spi", "cs", interrupt_pin="int", baudrate=1_000_000)
 
 
@@ -680,3 +681,33 @@ def test_interrupt_set(
     type(test_device._interrupt_pin).value = PropertyMock(return_value=pin_value)
     get_reg.return_value = reg_value
     assert test_device.interrupt_set is return_value
+
+
+@pytest.mark.parametrize("reg_value", [0x12, 0x0E])
+def test_spi_device_exists_returns_none_if_register_is_read_ok(
+    mocker, set_reg, get_reg, reg_value
+):
+    mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
+    # Mock a correct reading and confirm
+    get_reg.return_value = 0x12
+    test_as3935 = as3935.AS3935("spi", "cs", interrupt_pin="pin")
+    assert test_as3935._spi_device_exists() is None
+    get_reg.assert_called_once_with(test_as3935, as3935.AS3935._afe_gb)
+
+
+def test_that_spi_device_exists_returns_wrong_value_raises_ioerror(mocker, get_reg):
+    mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
+    # Mock an incorrect reading.
+    get_reg.return_value = 0x00
+    test_as3935 = as3935.AS3935("spi", "cs", interrupt_pin="pin")
+    with pytest.raises(OSError):
+        test_as3935._spi_device_exists()
+    get_reg.assert_called_with(test_as3935, as3935.AS3935._afe_gb)
+
+
+def test_that_spi_device_exists_is_called(mocker):
+    mock_spi_device_exists = mocker.patch.object(as3935.AS3935, "_spi_device_exists")
+    mocker.patch.object(as3935.spi_dev, "SPIDevice")
+    mocker.patch.object(as3935.digitalio, "DigitalInOut")
+    as3935.AS3935("spi", "cs", interrupt_pin="pin")
+    mock_spi_device_exists.assert_called_once()

@@ -157,6 +157,7 @@ class AS3935:
         self._device = spi_dev.SPIDevice(
             spi, digitalio.DigitalInOut(cs), baudrate=baudrate, polarity=1, phase=0
         )
+        self._spi_device_exists()
         self._interrupt_pin = digitalio.DigitalInOut(interrupt_pin)
         self._interrupt_pin.direction = digitalio.Direction.INPUT
 
@@ -465,3 +466,11 @@ class AS3935:
         if self._get_register(self._disp_flags):
             return None
         return self._interrupt_pin.value
+
+    def _spi_device_exists(self):
+        """Raise IOError if there is no communication with the sensor, None otherwise."""
+        # With no sensor connected, reading the SPI Device returns 0x00, read the
+        # indoor register that should never return 0x00 and raise an exception if
+        # requireed
+        if not self._get_register(self._afe_gb):
+            raise OSError("Unable to communicate with the sensor. Check your wiring.")
