@@ -471,6 +471,7 @@ class AS3935:
         """Raise IOError if there is no communication with the sensor, None otherwise."""
         # With no sensor connected, reading the SPI Device returns 0x00, read the
         # indoor register that should never return 0x00 and raise an exception if
-        # requireed
+        # required
+        self.reset()  # Put the sensor into a known, default state.
         if not self._get_register(self._afe_gb):
             raise OSError("Unable to communicate with the sensor. Check your wiring.")

@@ -31,6 +31,7 @@ def test_device(mocker):
     mocker.patch.object(as3935.spi_dev, "SPIDevice")
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
     mocker.patch.object(as3935.AS3935, "_spi_device_exists", return_value=None)
+    # mocker.patch.object(as3935.AS3935, "reset", return_value=None)
     return as3935.AS3935("spi", "cs", interrupt_pin="int", baudrate=1_000_000)
 
 
@@ -666,7 +667,7 @@ def test_calibrate_clocks_raises_exception_for_timeout(
         test_device._calibrate_clocks()
 
 
-def test_reset(set_reg, test_device, test_register):
+def test_reset(test_device, set_reg):
     test_device.reset()
     set_reg.assert_called_once_with(test_device, as3935.AS3935._preset_default, 0x96)
 
@@ -697,12 +698,17 @@ def test_spi_device_exists_returns_none_if_register_is_read_ok(
 
 def test_that_spi_device_exists_returns_wrong_value_raises_ioerror(mocker, get_reg):
     mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
+    mock_reset = mocker.patch.object(
+        as3935.AS3935, "reset", autospec=True, return_value=None
+    )
     # Mock an incorrect reading.
     get_reg.return_value = 0x00
     test_as3935 = as3935.AS3935("spi", "cs", interrupt_pin="pin")
     with pytest.raises(OSError):
         test_as3935._spi_device_exists()
     get_reg.assert_called_with(test_as3935, as3935.AS3935._afe_gb)
+    # Confirm reset was called
+    mock_reset.assert_called_once()
 
 
 def test_that_spi_device_exists_is_called(mocker):
