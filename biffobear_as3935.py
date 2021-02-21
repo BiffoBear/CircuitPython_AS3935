@@ -18,7 +18,7 @@ Implementation Notes
 
 **Hardware:**
 
-* SparkFun Lightning Detector - AS3935: https://www.sparkfun.com/products/15441
+* `SparkFun Lightning Detector - AS3935: <https://www.sparkfun.com/products/15441>`_
 
 **Software and Dependencies:**
 
