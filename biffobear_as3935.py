@@ -18,7 +18,7 @@ Implementation Notes
 
 **Hardware:**
 
-* Lightning detector board based on the AS3935 IC.
+* Lightning detector board based on the Franklin AS3935 IC.
 
 **Software and Dependencies:**
 
