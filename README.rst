@@ -23,8 +23,8 @@ CircuitPython driver library for the AS3935 lightning detector.
 
 .. note:: The AS3935 chip supports I2C but Sparkfun found it unreliable so this driver is SPI only.
 
- See the `AS3935 datasheet <https://cdn.sparkfun.com/assets/learn_tutorials/9/2/1/AS3935_Datasheet_EN_v2.pdf>`_
- for more details of chip operation.
+See the `AS3935 datasheet <https://cdn.sparkfun.com/assets/learn_tutorials/9/2/1/AS3935_Datasheet_EN_v2.pdf>`_
+for more details of chip operation.
 
 
 Dependencies
