@@ -42,7 +42,7 @@ __repo__ = "https://github.com/BiffoBear/Biffobear_CircuitPython_AS3935.git"
 _Register = namedtuple("Register", ["addr", "offset", "mask"])
 
 # Internal constants:
-# Constants for addresses and masks
+# Constants for addresses and masks to reduce RAM usage.
 _0X00 = const(0x00)
 _0X01 = const(0x01)
 _0X02 = const(0x02)

@@ -27,8 +27,6 @@ Table of Contents
 .. toctree::
     :caption: Related Products
 
-    * SparkFun Lightning Detector - AS3935:https://www.sparkfun.com/products/15441
-
 .. toctree::
     :caption: Other Links
 
