@@ -127,7 +127,7 @@ class AS3935:
     DATA_PURGE = _0X00  # 0x00 - Distance recalculated after purging old data.
     NOISE = _0X01  # 0x01 - INT_NH Noise level too high. Stays high while noise remains.
     DISTURBER = _0X04  # 0x04 - INT_D  Disturber detected.
-    LIGHTNING = _0X08 # 0x08 - INT_L  Lightning strike.
+    LIGHTNING = _0X08  # 0x08 - INT_L  Lightning strike.
     DIRECT_COMMAND = const(0x96)
 
     # AS3935 registers
@@ -439,12 +439,13 @@ class AS3935:
         trco_result, srco_result = _0X00, _0X00
         while not (trco_result and srco_result):
             if time.monotonic() - start > _0X01:
-                raise OSError("Unable to communicate with the sensor. Check your wiring.")
+                raise OSError(
+                    "Unable to communicate with the sensor. Check your wiring."
+                )
             trco_result = self._get_register(self._trco_calib)
             srco_result = self._get_register(self._srco_calib)
-        if trco_result == _0X01 or srco_result == srco_result == _0X01:
+        if trco_result == _0X01 or srco_result == _0X01:
             raise RuntimeError("AS3935 RCO clock calibration failed.")
-
 
     def _calibrate_clocks(self):
         """Recalibrate the internal clocks."""

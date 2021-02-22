@@ -619,9 +619,12 @@ def test_tuning_capacitance_setter(
         test_device.tuning_capacitance = out_of_range_value
 
 
-
-def test_calibrate_clocks_calls_correct_register_then_checks_calibration(mocker, set_reg, test_device):
-    mock_check_clock_calibration = mocker.patch.object(as3935.AS3935, "_check_clock_calibration")
+def test_calibrate_clocks_calls_correct_register_then_checks_calibration(
+    mocker, set_reg, test_device
+):
+    mock_check_clock_calibration = mocker.patch.object(
+        as3935.AS3935, "_check_clock_calibration"
+    )
     test_device._calibrate_clocks()
     set_reg.assert_called_once_with(test_device, as3935.AS3935._calib_rco, 0x96)
     mock_check_clock_calibration.assert_called_once()
@@ -646,7 +649,8 @@ def test_check_clock_calibration_waits_for_calibration_to_finish(
 
 @pytest.mark.parametrize("side_effects", [[0x02, 0x01], [0x01, 0x02], [0x01, 0x01]])
 def test_check_clock_calibration_raises_exception_when_a_calibration_fails(
-    mocker, set_reg, get_reg, test_device, side_effects):
+    mocker, set_reg, get_reg, test_device, side_effects
+):
     # TRCO_CALIB_NOK and SRCO_CALIB_NOK are set if the respective calibration failed
     get_reg.side_effect = side_effects
     expected_calls = [
@@ -709,7 +713,9 @@ def test_as3935_startup_checks(mocker, get_reg):
 
 
 def test_that_as3935_startup_checks_is_called(mocker):
-    mock_as3935_startup_checks = mocker.patch.object(as3935.AS3935, "_as3935_startup_checks")
+    mock_as3935_startup_checks = mocker.patch.object(
+        as3935.AS3935, "_as3935_startup_checks"
+    )
     mocker.patch.object(as3935.spi_dev, "SPIDevice")
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
     as3935.AS3935("spi", "cs", interrupt_pin="pin")
