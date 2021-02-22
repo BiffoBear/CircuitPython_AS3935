@@ -89,6 +89,8 @@ def test_other_constants():
     assert as3935.AS3935.DISTURBER == 0x04
     # 0x08 - INT_L  Lightning strike.
     assert as3935.AS3935.LIGHTNING == 0x08
+    # 0x96 is sent to initiate a reset or a clock calibration.
+    assert as3935.AS3935.DIRECT_COMMAND == 0x96
 
 
 def test_spi_command_buffers():

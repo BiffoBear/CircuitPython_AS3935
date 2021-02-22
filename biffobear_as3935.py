@@ -124,10 +124,11 @@ class AS3935:
     _DATA_BUFFER = bytearray(1)
 
     # Constants to make register values human readable in the code
-    DATA_PURGE = 0x00  # 0x00 - Distance recalculated after purging old data.
-    NOISE = 0x01  # 0x01 - INT_NH Noise level too high. Stays high while noise remains.
-    DISTURBER = 0x04  # 0x04 - INT_D  Disturber detected.
-    LIGHTNING = 0x08  # 0x08 - INT_L  Lightning strike.
+    DATA_PURGE = _0X00  # 0x00 - Distance recalculated after purging old data.
+    NOISE = _0X01  # 0x01 - INT_NH Noise level too high. Stays high while noise remains.
+    DISTURBER = _0X04  # 0x04 - INT_D  Disturber detected.
+    LIGHTNING = _0X08 # 0x08 - INT_L  Lightning strike.
+    DIRECT_COMMAND = const(0x96)
 
     # AS3935 registers
     # _register_name = _Register(address, offset, mask)
@@ -446,13 +447,14 @@ class AS3935:
 
     def _calibrate_clocks(self):
         """Recalibrate the internal clocks."""
-        # Send 0x96 to the CALIB_RCO register to start automatic RCO calibration
-        self._set_register(self._calib_rco, 0x96)
+        # Send the direct command to the CALIB_RCO register to start automatic RCO calibration
+        self._set_register(self._calib_rco, self.DIRECT_COMMAND)
         self._check_clock_calibration()
 
     def reset(self):
         """Reset all the settings to the manufacturer's defaults."""
-        self._set_register(self._preset_default, 0x96)
+        # Send the direct command to the PRESET_DEFAUTLT register to start reset settings
+        self._set_register(self._preset_default, self.DIRECT_COMMAND)
 
     @property
     def interrupt_set(self):
