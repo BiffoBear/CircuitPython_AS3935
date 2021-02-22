@@ -471,6 +471,9 @@ def test_power_down_setter_false_and_power_is_down(
     mock_calibrate_clocks = mocker.patch.object(
         as3935.AS3935, "_calibrate_clocks", autospec=True
     )
+    mock_check_clock_calibration = mocker.patch.object(
+        as3935.AS3935, "_check_clock_calibration", autospec=True
+    )
     mock_sleep = mocker.patch.object(as3935.time, "sleep")
     expected_calls = [
         mocker.call(test_device, as3935.AS3935._pwd, 0x00),  # Power down
@@ -481,6 +484,7 @@ def test_power_down_setter_false_and_power_is_down(
     get_reg.assert_called_once_with(test_device, as3935.AS3935._pwd)
     assert set_reg.call_args_list == expected_calls
     mock_calibrate_clocks.assert_called_once()
+    mock_check_clock_calibration.assert_called_once()
     mock_sleep.assert_called_once_with(0.002)
 
 

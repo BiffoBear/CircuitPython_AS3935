@@ -350,6 +350,7 @@ class AS3935:
             # RCO clocks need to be calibrated when powering back up from a power_down = True
             # Procedure as per AS3935 datasheet
             self._calibrate_clocks()
+            self._check_clock_calibration()
             self._set_register(self._disp_flags, 0x02)
             time.sleep(0.002)
             self._set_register(self._disp_flags, 0x00)
