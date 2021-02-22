@@ -431,14 +431,8 @@ class AS3935:
             self._tun_cap, _value_is_in_range(value, lo_limit=_0X00, hi_limit=120) // 8
         )
 
-#     def _check_clock_calibration(self):
-#         pass
-
-    def _calibrate_clocks(self):
-        """Recalibrate the internal clocks."""
-        # Send 0x96 to the CALIB_RCO register to start automatic RCO calibration
-        self._set_register(self._calib_rco, 0x96)
-        # Wait for both clock calibrations to finish
+    def _check_clock_calibration(self):
+        """Check that clock calibration was successful."""
         start = time.monotonic()
         trco_result, srco_result = _0X00, _0X00
         while not (trco_result and srco_result):
@@ -448,6 +442,13 @@ class AS3935:
             srco_result = self._get_register(self._srco_calib)
         if trco_result == _0X01 or srco_result == srco_result == _0X01:
             raise RuntimeError("AS3935 RCO clock calibration failed.")
+
+
+    def _calibrate_clocks(self):
+        """Recalibrate the internal clocks."""
+        # Send 0x96 to the CALIB_RCO register to start automatic RCO calibration
+        self._set_register(self._calib_rco, 0x96)
+        self._check_clock_calibration()
 
     def reset(self):
         """Reset all the settings to the manufacturer's defaults."""

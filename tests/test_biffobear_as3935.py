@@ -613,7 +613,15 @@ def test_tuning_capacitance_setter(
         test_device.tuning_capacitance = out_of_range_value
 
 
-def test_calibrate_clocks_waits_for_calibration_to_finish(
+
+def test_calibrate_clocks_calls_correct_register_then_checks_calibration(mocker, set_reg, test_device):
+    mock_check_clock_calibration = mocker.patch.object(as3935.AS3935, "_check_clock_calibration")
+    test_device._calibrate_clocks()
+    set_reg.assert_called_once_with(test_device, as3935.AS3935._calib_rco, 0x96)
+    mock_check_clock_calibration.assert_called_once()
+
+
+def test_check_clock_calibration_waits_for_calibration_to_finish(
     mocker, set_reg, get_reg, test_device
 ):
     # Calibration complete when TRCO_CALIB_DONE and SRCO_CALIB_DONE are set
@@ -626,13 +634,12 @@ def test_calibrate_clocks_waits_for_calibration_to_finish(
         mocker.call(test_device, as3935.AS3935._trco_calib),
         mocker.call(test_device, as3935.AS3935._srco_calib),
     ]
-    test_device._calibrate_clocks()
-    set_reg.assert_called_once_with(test_device, as3935.AS3935._calib_rco, 0x96)
+    test_device._check_clock_calibration()
     assert get_reg.call_args_list == expected_calls
 
 
 @pytest.mark.parametrize("side_effects", [[0x02, 0x01], [0x01, 0x02], [0x01, 0x01]])
-def test_calibrate_clocks_raises_exception_when_a_calibration_fails(
+def test_check_clock_calibration_raises_exception_when_a_calibration_fails(
     mocker, set_reg, get_reg, test_device, side_effects):
     # TRCO_CALIB_NOK and SRCO_CALIB_NOK are set if the respective calibration failed
     get_reg.side_effect = side_effects
@@ -641,11 +648,11 @@ def test_calibrate_clocks_raises_exception_when_a_calibration_fails(
         mocker.call(test_device, as3935.AS3935._srco_calib),
     ]
     with pytest.raises(RuntimeError):
-        test_device._calibrate_clocks()
+        test_device._check_clock_calibration()
     assert get_reg.call_args_list == expected_calls
 
 
-def test_calibrate_clocks_raises_exception_for_timeout(
+def test_check_clock_calibration_raises_exception_for_timeout(
     mocker, set_reg, get_reg, test_device
 ):
     # This tests that a TimeoutError is raised if the calibration isn't complete after 1 second.
@@ -655,7 +662,7 @@ def test_calibrate_clocks_raises_exception_for_timeout(
         as3935.time, "monotonic", side_effect=[1000, 1001, 1001.01]
     )
     with pytest.raises(TimeoutError):
-        test_device._calibrate_clocks()
+        test_device._check_clock_calibration()
 
 
 def test_reset(test_device, set_reg):
@@ -708,8 +715,3 @@ def test_that_spi_device_exists_is_called(mocker):
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
     as3935.AS3935("spi", "cs", interrupt_pin="pin")
     mock_spi_device_exists.assert_called_once()
-    
-    
-def test_check_clock_calibration_returns_none_for_good_calibration(get_reg, test_device):
-    as3935.AS3935._check_clock_calibration(test_device)
-    get_reg.
