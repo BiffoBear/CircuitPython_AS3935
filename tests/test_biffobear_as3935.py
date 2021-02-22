@@ -710,6 +710,6 @@ def test_that_spi_device_exists_is_called(mocker):
     mock_spi_device_exists.assert_called_once()
     
     
-# def test_check_clock_calibration_returns_none_for_good_calibration(get_reg, test_device):
-#     as3935.AS3935._check_clock_calibration(test_device)
-#     get_reg.
+def test_check_clock_calibration_returns_none_for_good_calibration(get_reg, test_device):
+    as3935.AS3935._check_clock_calibration(test_device)
+    get_reg.
