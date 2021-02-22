@@ -444,7 +444,7 @@ class AS3935:
                 )
             trco_result = self._get_register(self._trco_calib)
             srco_result = self._get_register(self._srco_calib)
-        if trco_result == _0X01 or srco_result == _0X01:
+        if _0X01 in [trco_result, srco_result]:
             raise RuntimeError("AS3935 RCO clock calibration failed.")
 
     def _calibrate_clocks(self):
