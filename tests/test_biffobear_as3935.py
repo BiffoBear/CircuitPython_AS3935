@@ -30,7 +30,7 @@ def test_device(mocker):
     # Returns an instance of the AS3935 driver with SDIDevice patched.
     mocker.patch.object(as3935.spi_dev, "SPIDevice")
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
-    mocker.patch.object(as3935.AS3935, "_spi_device_exists", return_value=None)
+    mocker.patch.object(as3935.AS3935, "_as3935_startup_checks", return_value=None)
     # mocker.patch.object(as3935.AS3935, "reset", return_value=None)
     return as3935.AS3935("spi", "cs", interrupt_pin="int", baudrate=1_000_000)
 
@@ -663,7 +663,7 @@ def test_check_clock_calibration_raises_exception_for_timeout(
     mock_monotonic = mocker.patch.object(
         as3935.time, "monotonic", side_effect=[1000, 1001, 1001.01]
     )
-    with pytest.raises(TimeoutError):
+    with pytest.raises(OSError):
         test_device._check_clock_calibration()
 
 
@@ -684,36 +684,29 @@ def test_interrupt_set(
     assert test_device.interrupt_set is return_value
 
 
-@pytest.mark.parametrize("reg_value", [0x12, 0x0E])
-def test_spi_device_exists_returns_none_if_register_is_read_ok(
-    mocker, set_reg, get_reg, reg_value
-):
+def test_as3935_startup_checks(mocker, get_reg):
+    # Mock out the __init__ function so that SPIDevice and pin assignments aren't called.
     mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
-    # Mock a correct reading and confirm
-    get_reg.return_value = 0x12
-    test_as3935 = as3935.AS3935("spi", "cs", interrupt_pin="pin")
-    assert test_as3935._spi_device_exists() is None
-    get_reg.assert_called_once_with(test_as3935, as3935.AS3935._afe_gb)
-
-
-def test_that_spi_device_exists_returns_wrong_value_raises_ioerror(mocker, get_reg):
-    mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
+    # Mock functions that should be called by the startup checks function.
     mock_reset = mocker.patch.object(
         as3935.AS3935, "reset", autospec=True, return_value=None
     )
-    # Mock an incorrect reading.
-    get_reg.return_value = 0x00
+    mock_check_clock_calibration = mocker.patch.object(
+        as3935.AS3935, "_check_clock_calibration", autospec=True, return_value=None
+    )
+    # Confirm functions were called
     test_as3935 = as3935.AS3935("spi", "cs", interrupt_pin="pin")
-    with pytest.raises(OSError):
-        test_as3935._spi_device_exists()
-    get_reg.assert_called_with(test_as3935, as3935.AS3935._afe_gb)
+    test_as3935._as3935_startup_checks()
     # Confirm reset was called
     mock_reset.assert_called_once()
+    # Confirm _check_clock_calibration was called. If the chip is not responding, this will time
+    # out, so it checks the clocks and communication.
+    mock_check_clock_calibration.assert_called_once()
 
 
-def test_that_spi_device_exists_is_called(mocker):
-    mock_spi_device_exists = mocker.patch.object(as3935.AS3935, "_spi_device_exists")
+def test_that_as3935_startup_checks_is_called(mocker):
+    mock_as3935_startup_checks = mocker.patch.object(as3935.AS3935, "_as3935_startup_checks")
     mocker.patch.object(as3935.spi_dev, "SPIDevice")
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
     as3935.AS3935("spi", "cs", interrupt_pin="pin")
-    mock_spi_device_exists.assert_called_once()
+    mock_as3935_startup_checks.assert_called_once()

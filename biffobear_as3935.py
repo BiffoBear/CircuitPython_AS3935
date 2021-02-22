@@ -157,7 +157,7 @@ class AS3935:
         self._device = spi_dev.SPIDevice(
             spi, digitalio.DigitalInOut(cs), baudrate=baudrate, polarity=1, phase=0
         )
-        self._spi_device_exists()
+        self._as3935_startup_checks()
         self._interrupt_pin = digitalio.DigitalInOut(interrupt_pin)
         self._interrupt_pin.direction = digitalio.Direction.INPUT
 
@@ -438,7 +438,7 @@ class AS3935:
         trco_result, srco_result = _0X00, _0X00
         while not (trco_result and srco_result):
             if time.monotonic() - start > _0X01:
-                raise TimeoutError("RCO clock calibration timed out.")
+                raise OSError("Unable to communicate with the sensor. Check your wiring.")
             trco_result = self._get_register(self._trco_calib)
             srco_result = self._get_register(self._srco_calib)
         if trco_result == _0X01 or srco_result == srco_result == _0X01:
@@ -470,11 +470,10 @@ class AS3935:
             return None
         return self._interrupt_pin.value
 
-    def _spi_device_exists(self):
-        """Raise IOError if there is no communication with the sensor, None otherwise."""
-        # With no sensor connected, reading the SPI Device returns 0x00, read the
+    def _as3935_startup_checks(self):
+        """Check communication with the AS3935 and confirm clocks are calibrated."""
+        # With no sensor connected, reading the SPI Device returns 0x00, so read the
         # indoor register that should never return 0x00 and raise an exception if
         # required
         self.reset()  # Put the sensor into a known, default state.
-        if not self._get_register(self._afe_gb):
-            raise OSError("Unable to communicate with the sensor. Check your wiring.")
+        self._check_clock_calibration()
