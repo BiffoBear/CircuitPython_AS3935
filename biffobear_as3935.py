@@ -130,6 +130,7 @@ class AS3935:
     LIGHTNING = 0x08  # 0x08 - INT_L  Lightning strike.
 
     # AS3935 registers
+    # _register_name = _Register(address, offset, mask)
     _pwd = _Register(_0X00, _0X00, _0X01)
     _afe_gb = _Register(_0X00, _0X01, _0X3E)
     _wdth = _Register(_0X01, _0X00, _0X0F)
@@ -145,11 +146,9 @@ class AS3935:
     _s_lig_mm = _Register(_0X06, _0X00, _0X1F)
     _distance = _Register(_0X07, _0X00, _0X3F)
     _tun_cap = _Register(_0X08, _0X00, _0X0F)
-    _disp_flags = _Register(_0X08, 0x05, _0XE0)
-    _trco_calib_nok = _Register(_0X3A, _0X06, _0X40)
-    _trco_calib_done = _Register(_0X3A, _0X07, _0X80)
-    _srco_calib_nok = _Register(_0X3B, _0X06, _0X40)
-    _srco_calib_done = _Register(_0X3B, _0X07, _0X80)
+    _disp_flags = _Register(_0X08, _0X05, _0XE0)
+    _trco_calib = _Register(_0X3A, _0X06, _0XC0)
+    _srco_calib = _Register(_0X3B, _0X06, _0XC0)
     _preset_default = _Register(_0X3C, _0X00, _0XFF)
     _calib_rco = _Register(_0X3D, _0X00, _0XFF)
 
@@ -432,22 +431,23 @@ class AS3935:
             self._tun_cap, _value_is_in_range(value, lo_limit=_0X00, hi_limit=120) // 8
         )
 
+#     def _check_clock_calibration(self):
+#         pass
+
     def _calibrate_clocks(self):
         """Recalibrate the internal clocks."""
         # Send 0x96 to the CALIB_RCO register to start automatic RCO calibration
         self._set_register(self._calib_rco, 0x96)
         # Wait for both clock calibrations to finish
         start = time.monotonic()
-        while not (
-            self._get_register(self._trco_calib_done)
-            and self._get_register(self._srco_calib_done)
-        ):
-            if time.monotonic() - start > 1:
-                raise TimeoutError("RCO calibration timed out.")
-        if self._get_register(self._trco_calib_nok) or self._get_register(
-            self._srco_calib_nok
-        ):
-            raise RuntimeError("AS3935 RCO calibration failed.")
+        trco_result, srco_result = _0X00, _0X00
+        while not (trco_result and srco_result):
+            if time.monotonic() - start > _0X01:
+                raise TimeoutError("RCO clock calibration timed out.")
+            trco_result = self._get_register(self._trco_calib)
+            srco_result = self._get_register(self._srco_calib)
+        if trco_result == _0X01 or srco_result == srco_result == _0X01:
+            raise RuntimeError("AS3935 RCO clock calibration failed.")
 
     def reset(self):
         """Reset all the settings to the manufacturer's defaults."""

@@ -117,10 +117,8 @@ def test_spi_command_buffers():
         (as3935.AS3935._distance, 7, 0, 0b0011_1111),
         (as3935.AS3935._tun_cap, 8, 0, 0b0000_1111),
         (as3935.AS3935._disp_flags, 8, 5, 0b1110_0000),
-        (as3935.AS3935._trco_calib_nok, 58, 6, 0b0100_0000),
-        (as3935.AS3935._trco_calib_done, 58, 7, 0b1000_0000),
-        (as3935.AS3935._srco_calib_nok, 59, 6, 0b0100_0000),
-        (as3935.AS3935._srco_calib_done, 59, 7, 0b1000_0000),
+        (as3935.AS3935._trco_calib, 58, 6, 0b1100_0000),
+        (as3935.AS3935._srco_calib, 59, 6, 0b1100_0000),
         (as3935.AS3935._preset_default, 60, 0, 0b1111_1111),
         (as3935.AS3935._calib_rco, 61, 0, 0b1111_1111),
     ],
@@ -619,36 +617,29 @@ def test_calibrate_clocks_waits_for_calibration_to_finish(
     mocker, set_reg, get_reg, test_device
 ):
     # Calibration complete when TRCO_CALIB_DONE and SRCO_CALIB_DONE are set
-    get_reg.side_effect = [0, 0, 0, 1, 1, 0, 0]
+    get_reg.side_effect = [0x00, 0x00, 0x00, 0x02, 0x02, 0x02]
     expected_calls = [
-        mocker.call(test_device, as3935.AS3935._trco_calib_done),
-        mocker.call(test_device, as3935.AS3935._trco_calib_done),
-        mocker.call(test_device, as3935.AS3935._trco_calib_done),
-        mocker.call(test_device, as3935.AS3935._trco_calib_done),
-        mocker.call(test_device, as3935.AS3935._srco_calib_done),
-        mocker.call(test_device, as3935.AS3935._trco_calib_nok),
-        mocker.call(test_device, as3935.AS3935._srco_calib_nok),
+        mocker.call(test_device, as3935.AS3935._trco_calib),
+        mocker.call(test_device, as3935.AS3935._srco_calib),
+        mocker.call(test_device, as3935.AS3935._trco_calib),
+        mocker.call(test_device, as3935.AS3935._srco_calib),
+        mocker.call(test_device, as3935.AS3935._trco_calib),
+        mocker.call(test_device, as3935.AS3935._srco_calib),
     ]
     test_device._calibrate_clocks()
     set_reg.assert_called_once_with(test_device, as3935.AS3935._calib_rco, 0x96)
     assert get_reg.call_args_list == expected_calls
 
 
-@pytest.mark.parametrize(
-    "side_effects, call_count",
-    [([1, 1, 0, 1], 4), ([1, 1, 1, 0], 3), ([1, 1, 1, 1], 3)],
-)
+@pytest.mark.parametrize("side_effects", [[0x02, 0x01], [0x01, 0x02], [0x01, 0x01]])
 def test_calibrate_clocks_raises_exception_when_a_calibration_fails(
-    mocker, set_reg, get_reg, test_device, side_effects, call_count
-):
+    mocker, set_reg, get_reg, test_device, side_effects):
     # TRCO_CALIB_NOK and SRCO_CALIB_NOK are set if the respective calibration failed
     get_reg.side_effect = side_effects
     expected_calls = [
-        mocker.call(test_device, as3935.AS3935._trco_calib_done),
-        mocker.call(test_device, as3935.AS3935._srco_calib_done),
-        mocker.call(test_device, as3935.AS3935._trco_calib_nok),
-        mocker.call(test_device, as3935.AS3935._srco_calib_nok),
-    ][:call_count]
+        mocker.call(test_device, as3935.AS3935._trco_calib),
+        mocker.call(test_device, as3935.AS3935._srco_calib),
+    ]
     with pytest.raises(RuntimeError):
         test_device._calibrate_clocks()
     assert get_reg.call_args_list == expected_calls
@@ -717,3 +708,8 @@ def test_that_spi_device_exists_is_called(mocker):
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
     as3935.AS3935("spi", "cs", interrupt_pin="pin")
     mock_spi_device_exists.assert_called_once()
+    
+    
+# def test_check_clock_calibration_returns_none_for_good_calibration(get_reg, test_device):
+#     as3935.AS3935._check_clock_calibration(test_device)
+#     get_reg.
