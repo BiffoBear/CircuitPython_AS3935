@@ -28,11 +28,10 @@ def set_reg(mocker):
 @pytest.fixture
 def test_device(mocker):
     # Returns an instance of the AS3935 driver with SDIDevice patched.
-    mocker.patch.object(as3935.spi_dev, "SPIDevice")
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
     mocker.patch.object(as3935.AS3935, "_as3935_startup_checks", return_value=None)
     # mocker.patch.object(as3935.AS3935, "reset", return_value=None)
-    return as3935.AS3935("spi", "cs", interrupt_pin="int", baudrate=1_000_000)
+    return as3935.AS3935(interrupt_pin="int")
 
 
 @pytest.fixture
@@ -182,8 +181,8 @@ def test_init_calls(mocker, spi_dev, spi, cs, interrupt, int_pin):
 #     name, _, kwargs = test_device._device.__enter__.return_value.mock_calls[0]
 #     assert name == "write"
 #     assert kwargs == {"end": 1}
-# 
-# 
+#
+#
 # def test_read_byte_in_calls_spi_dev_readinto_with_correct_kwargs(
 #     test_device, test_register
 # ):
@@ -191,8 +190,8 @@ def test_init_calls(mocker, spi_dev, spi, cs, interrupt, int_pin):
 #     name, _, kwargs = test_device._device.__enter__.return_value.mock_calls[1]
 #     assert name == "readinto"
 #     assert kwargs == {"end": 1}
-# 
-# 
+#
+#
 @pytest.mark.parametrize("address, buffer", [(0x0F, 0x4F), (0x3F, 0x7F), (0xF0, 0x70)])
 def test_read_byte_in_sets_correct_bits_for_read_address(test_device, address, buffer):
     test_register = as3935._Register(address, 0x04, 0b0111_0000)
