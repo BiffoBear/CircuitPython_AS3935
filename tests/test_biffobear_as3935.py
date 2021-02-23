@@ -611,7 +611,7 @@ def test_tuning_capacitance_getter(get_reg, test_device, register_value, value):
 def test_tuning_capacitance_setter(
     set_reg, test_device, value, out_of_range_value, register_value
 ):
-    # Test tuning capacitor settings in range 0 - 120 // 8
+    # Test tuning capacitor settings in range 0 - 120 // 8 i.e. 0x00 - 0x0f
     test_device.tuning_capacitance = value
     set_reg.assert_called_once_with(test_device, as3935.AS3935._tun_cap, register_value)
     # Test with out_of_range_values

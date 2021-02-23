@@ -38,11 +38,11 @@ import adafruit_bus_device.spi_device as spi_dev
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/BiffoBear/Biffobear_CircuitPython_AS3935.git"
 
-# Data structure for storing the sensor register details.
+# Data structure for storing the sensor register details
 _Register = namedtuple("Register", ["addr", "offset", "mask"])
 
 # Internal constants:
-# Constants for addresses and masks to reduce RAM usage.
+# Constants for addresses and masks to reduce RAM usage
 _0X00 = const(0x00)
 _0X01 = const(0x01)
 _0X02 = const(0x02)
@@ -119,15 +119,15 @@ class AS3935:
         antenna.
     """
 
-    # Global bufferS for SPI commands and address.
+    # Global bufferS for SPI commands and address
     _ADDR_BUFFER = bytearray(1)
     _DATA_BUFFER = bytearray(1)
 
     # Constants to make register values human readable in the code
-    DATA_PURGE = _0X00  # 0x00 - Distance recalculated after purging old data.
-    NOISE = _0X01  # 0x01 - INT_NH Noise level too high. Stays high while noise remains.
-    DISTURBER = _0X04  # 0x04 - INT_D  Disturber detected.
-    LIGHTNING = _0X08  # 0x08 - INT_L  Lightning strike.
+    DATA_PURGE = _0X00  # 0x00 - Distance recalculated after purging old data
+    NOISE = _0X01  # 0x01 - INT_NH Noise level too high. Stays high while noise remains
+    DISTURBER = _0X04  # 0x04 - INT_D  Disturber detected
+    LIGHTNING = _0X08  # 0x08 - INT_L  Lightning strike
     DIRECT_COMMAND = const(0x96)
 
     # AS3935 registers
@@ -283,14 +283,14 @@ class AS3935:
         """int: Status of the interrupt register.
 
         The following class constants are defined as helpers:
-        DATA_PURGE = 0x00  # Distance recalculated after purging old data.
-        NOISE = 0x01  # INT_NH Noise level too high. Stays high while noise remains.
-        DISTURBER = 0x04  # INT_D  Disturber detected.
-        LIGHTNING = 0x08  # INT_L  Lightning strike.
+        DATA_PURGE = 0x00  # Distance recalculated after purging old data
+        NOISE = 0x01  # INT_NH Noise level too high. Stays high while noise remains
+        DISTURBER = 0x04  # INT_D  Disturber detected
+        LIGHTNING = 0x08  # INT_L  Lightning strike
 
         This register is cleared after it is read.
         """
-        # Wait a minimum of 2 ms between the interrupt pin going high and reading the register.
+        # Wait a minimum of 2 ms between the interrupt pin going high and reading the register
         time.sleep(0.0002)
         return self._get_register(self._int)
 
@@ -303,8 +303,8 @@ class AS3935:
 
     @disturber_mask.setter
     def disturber_mask(self, value):
-        # Set the register value to 0x01 to suppress disturber event interrupts.
-        # Set the register value to 0x00 to allow disturber event interrupts.
+        # Set the register value to 0x01 to suppress disturber event interrupts
+        # Set the register value to 0x00 to allow disturber event interrupts
         assert isinstance(value, bool)
         self._set_register(self._mask_dist, int(value))
 
@@ -316,7 +316,7 @@ class AS3935:
 
         Threshold may be 1, 5, 9, or 16. Default is 1.
         """
-        # Convert the register value to the threshold.
+        # Convert the register value to the threshold
         return _LIGHTNING_COUNT[self._get_register(self._min_num_ligh)]
 
     @strike_count_threshold.setter
@@ -341,13 +341,17 @@ class AS3935:
 
     @power_down.setter
     def power_down(self, value):
-        assert isinstance(value, bool)
+        # If True, power down the chip. Don't check current state because it doesn't matter
+        # whether the chip is already powered down
+        # If False check the current state. If the chip is already powered up, do nothing
+        # otherwise, power up the chip then calibrate and check the clocks
+        assert isinstance(value, bool)  # Be specific because of Python's truthiness
         if value:
             self._set_register(self._pwd, 0x01)
         elif self.power_down:
-            # Only do this if the power_down mode is already set as clocks get calibrated.
+            # Only do this if the power_down mode is already set as clocks get calibrated
             self._set_register(self._pwd, 0x00)
-            # RCO clocks need to be calibrated when powering back up from a power_down = True
+            # RCO clocks need to be calibrated when powering back up from a power_down
             # Procedure as per AS3935 datasheet
             self._calibrate_clocks()
             self._check_clock_calibration()
@@ -362,7 +366,7 @@ class AS3935:
 
         Value must be one of 16, 32, 64, or 128. Default is 16.
         """
-        # Convert the register value to the divisor.
+        # Convert the register value to the divisor
         return _FREQ_DIVISOR[self._get_register(self._lco_fdiv)]
 
     @freq_divisor.setter
@@ -376,14 +380,13 @@ class AS3935:
         """bool: When True, the antenna resonant frequency is divided by the freq_divisor
         and output as a square wave on the interrupt pin. Default is False.
         """
-        # Convert bit 3 status to bool
-        return self._get_register(self._disp_flags) == 4
+        return self._get_register(self._disp_flags) == 0x04
 
     @output_antenna_freq.setter
     def output_antenna_freq(self, value):
         assert isinstance(value, bool)
-        # Set the register value to 0x04 to enable antenna tuning mode.
-        # Set the register value to 0x00 to disable antenna tuning mode.
+        # Set the register value to 0x04 to enable antenna tuning mode
+        # Set the register value to 0x00 to disable antenna tuning mode
         self._set_register(self._disp_flags, int(value) << 2)
 
     @property
@@ -391,50 +394,52 @@ class AS3935:
         """bool: When True, output the SRCO clock signal on the interrupt pin.
         Default is False.
         """
-        # Convert bit 2 status to bool
-        return self._get_register(self._disp_flags) == 2
+        return self._get_register(self._disp_flags) == 0x02
 
     @output_srco.setter
     def output_srco(self, value):
         assert isinstance(value, bool)
-        # Set the register value to 0x02 to output SRCO clock to the interrupt pin.
-        # Set the register value to 0x00 to allow normal interrupt operation.
-        self._set_register(self._disp_flags, int(value) << 1)
+        # Set the register value to 0x02 to output SRCO clock to the interrupt pin
+        # Set the register value to 0x00 to allow normal interrupt operation
+        self._set_register(self._disp_flags, int(value) << 1)  # True is 0x02, False is 0x00
 
     @property
     def output_trco(self):
         """bool: When True, output the TRCO clock signal on the interrupt pin.
         Default is False.
         """
-        # Convert bit 1 status to bool
         return self._get_register(self._disp_flags) == 1
 
     @output_trco.setter
     def output_trco(self, value):
         assert isinstance(value, bool)
-        # Set the register value to 0x01 to output SRCO clock to the interrupt pin.
-        # Set the register value to 0x00 to allow normal interrupt operation.
-        self._set_register(self._disp_flags, int(value))
+        # Set the register value to 0x01 to output SRCO clock to the interrupt pin
+        # Set the register value to 0x00 to allow normal interrupt operation
+        self._set_register(self._disp_flags, int(value))  # True is 0x01, False is 0x00
 
     @property
     def tuning_capacitance(self):
         """int: The tuning capacitance for the RLC antenna in pF. This capacitance
         is added to the antenna to tune it within 3.5 % of 500 kHz (483 - 517 kHz).
 
-        Values must be in the range 0 - 120. Any of these values may be set, but the
-        capacitance is in steps of 8, so values less than 120 will be rounded down to
-        the nearest step. Default is 0.
+        Capacitance must be in the range 0 - 120. Any of these values may be set,
+        however, the capacitance is set in steps of 8 pF, so values less than 120
+        will be rounded down to the nearest step. Default is 0.
         """
         return self._get_register(self._tun_cap) * 8
 
     @tuning_capacitance.setter
     def tuning_capacitance(self, value):
         self._set_register(
-            self._tun_cap, _value_is_in_range(value, lo_limit=_0X00, hi_limit=120) // 8
-        )
+            self._tun_cap, _value_is_in_range(value, lo_limit=_0X00, hi_limit=120) // 8)
 
     def _check_clock_calibration(self):
         """Check that clock calibration was successful."""
+        # trco_result and srco_result are 0x00 until the calibration is complete
+        # For each clock, the respective register is set to 0x01 for failure and to 0x02
+        # for success
+        # Use a timeout in case the caliration register is never set (e.g. due to no comms
+        # with the sensor)
         start = time.monotonic()
         trco_result, srco_result = _0X00, _0X00
         while not (trco_result and srco_result):
@@ -450,6 +455,7 @@ class AS3935:
     def _calibrate_clocks(self):
         """Recalibrate the internal clocks."""
         # Send the direct command to the CALIB_RCO register to start automatic RCO calibration
+        # then check that the calibration has succeeded
         self._set_register(self._calib_rco, self.DIRECT_COMMAND)
         self._check_clock_calibration()
 
@@ -468,14 +474,17 @@ class AS3935:
         The interrupt pin is held high for 1.5 seconds after a disturber event.
         The interrupt pin is held high for the duration of high noise.
         """
+        # Return None if the interrupt pin is set to output a clock or antenna frequency,
+        # otherwise, return the state of the interrupt pin
         if self._get_register(self._disp_flags):
             return None
         return self._interrupt_pin.value
 
     def _as3935_startup_checks(self):
         """Check communication with the AS3935 and confirm clocks are calibrated."""
-        # With no sensor connected, reading the SPI Device returns 0x00, so read the
-        # indoor register that should never return 0x00 and raise an exception if
-        # required
-        self.reset()  # Put the sensor into a known, default state.
+        # With no sensor connected, reading the SPI Device returns 0x00. After a reset
+        # the clocks are calibrated automatically. Therefore, resetting the sensor then
+        # checking the clock calibration status tells the that the clocks are OK and if
+        # the calibration times out, we know that there are no comms with the sensor
+        self.reset()
         self._check_clock_calibration()
