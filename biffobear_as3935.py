@@ -163,12 +163,9 @@ class AS3935:
     _CALIB_RCO = _Register(_0X3D, _0X00, _0XFF)  # Set this to 0x96 to calibrate the clocks
 
     def __init__(self, spi, cs, *, interrupt_pin, baudrate=2_000_000):
-        self._device = spi_dev.SPIDevice(
-            spi, digitalio.DigitalInOut(cs), baudrate=baudrate, polarity=1, phase=0
-        )
-        self._as3935_startup_checks()
         self._interrupt_pin = digitalio.DigitalInOut(interrupt_pin)
         self._interrupt_pin.direction = digitalio.Direction.INPUT
+        self._as3935_startup_checks()
 
     def _read_byte_in(self, register):
         """Read one byte from the selected address."""
@@ -497,3 +494,9 @@ class AS3935:
         # the calibration times out, we know that there are no comms with the sensor
         self.reset()
         self._check_clock_calibration()
+
+
+class AS3935_SPI(AS3935):
+
+    def __init__(self, spi, cs, *, baudrate=2_000_000, interrupt_pin):
+        self._device = spi_dev.SPIDevice(spi, digitalio.DigitalInOut(cs), baudrate=baudrate, polarity=1, phase=0)
