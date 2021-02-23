@@ -126,6 +126,7 @@ def test_spi_command_buffers():
     ],
 )
 def test_register_settings(register, addr, offset, mask):
+    # Compare register tuples
     assert register.addr == addr
     assert register.offset == offset
     assert register.mask == mask
@@ -175,9 +176,9 @@ def test_init_calls(mocker, spi_dev, spi, cs, interrupt, int_pin):
     # assert test_as3935._interrupt_pin == int_pin
 
 
-def test_read_byte_in_calls_spi_dev_write_with_correct_kwargs(test_device):
-    test_register = as3935._Register(0x01, 0x04, 0b0111_0000)
+def test_read_byte_in_calls_spi_dev_write_with_correct_arguments(test_device, test_register):
     test_device._read_byte_in(test_register)
+    # Complex mocking to work with "with x as y" constructs
     name, _, kwargs = test_device._device.__enter__.return_value.mock_calls[0]
     assert name == "write"
     assert kwargs == {"end": 1}
@@ -196,6 +197,7 @@ def test_read_byte_in_calls_spi_dev_readinto_with_correct_kwargs(
 def test_read_byte_in_sets_correct_bits_for_read_address(test_device, address, buffer):
     test_register = as3935._Register(address, 0x04, 0b0111_0000)
     test_device._read_byte_in(test_register)
+    # Complex mocking to work with "with x as y" constructs
     name, args, _ = test_device._device.__enter__.return_value.mock_calls[0]
     assert test_device._ADDR_BUFFER[0] == buffer
     assert name == "write"
@@ -308,7 +310,7 @@ def test_indoor_setter(set_reg, test_device, value, register_value):
     # Set the register value to 0x12 for Indoor mode and 0x0e for outdoor mode
     test_device.indoor = value
     set_reg.assert_called_once_with(test_device, as3935.AS3935._AFE_GB, register_value)
-    # Test that none bool values are rejected
+    # Test that none boolean values are rejected
     with pytest.raises(AssertionError):
         test_device.indoor = "1"
 
