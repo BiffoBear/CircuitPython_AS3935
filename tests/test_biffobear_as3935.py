@@ -103,26 +103,26 @@ def test_spi_command_buffers():
 @pytest.mark.parametrize(
     "register, addr, offset, mask",
     [
-        (as3935.AS3935._pwd, 0, 0, 0b0000_0001),
-        (as3935.AS3935._afe_gb, 0, 1, 0b0011_1110),
-        (as3935.AS3935._wdth, 1, 0, 0b0000_1111),
-        (as3935.AS3935._nf_lev, 1, 4, 0b0111_0000),
-        (as3935.AS3935._srej, 2, 0, 0b0000_1111),
-        (as3935.AS3935._min_num_ligh, 2, 4, 0b0011_0000),
-        (as3935.AS3935._cl_stat, 2, 6, 0b0100_0000),
-        (as3935.AS3935._int, 3, 0, 0b0000_1111),
-        (as3935.AS3935._mask_dist, 3, 5, 0b0010_0000),
-        (as3935.AS3935._lco_fdiv, 3, 6, 0b1100_0000),
-        (as3935.AS3935._s_lig_l, 4, 0, 0b1111_1111),
-        (as3935.AS3935._s_lig_m, 5, 0, 0b1111_1111),
-        (as3935.AS3935._s_lig_mm, 6, 0, 0b0001_1111),
-        (as3935.AS3935._distance, 7, 0, 0b0011_1111),
-        (as3935.AS3935._tun_cap, 8, 0, 0b0000_1111),
-        (as3935.AS3935._disp_flags, 8, 5, 0b1110_0000),
-        (as3935.AS3935._trco_calib, 58, 6, 0b1100_0000),
-        (as3935.AS3935._srco_calib, 59, 6, 0b1100_0000),
-        (as3935.AS3935._preset_default, 60, 0, 0b1111_1111),
-        (as3935.AS3935._calib_rco, 61, 0, 0b1111_1111),
+        (as3935.AS3935._PWD, 0, 0, 0b0000_0001),
+        (as3935.AS3935._AFE_GB, 0, 1, 0b0011_1110),
+        (as3935.AS3935._WDTH, 1, 0, 0b0000_1111),
+        (as3935.AS3935._NF_LEV, 1, 4, 0b0111_0000),
+        (as3935.AS3935._SREJ, 2, 0, 0b0000_1111),
+        (as3935.AS3935._MIN_NUM_LIGH, 2, 4, 0b0011_0000),
+        (as3935.AS3935._CL_STAT, 2, 6, 0b0100_0000),
+        (as3935.AS3935._INT, 3, 0, 0b0000_1111),
+        (as3935.AS3935._MASK_DIST, 3, 5, 0b0010_0000),
+        (as3935.AS3935._LCO_FDIV, 3, 6, 0b1100_0000),
+        (as3935.AS3935._S_LIG_L, 4, 0, 0b1111_1111),
+        (as3935.AS3935._S_LIG_M, 5, 0, 0b1111_1111),
+        (as3935.AS3935._S_LIG_MM, 6, 0, 0b0001_1111),
+        (as3935.AS3935._DISTANCE, 7, 0, 0b0011_1111),
+        (as3935.AS3935._TUN_CAP, 8, 0, 0b0000_1111),
+        (as3935.AS3935._DISP_FLAGS, 8, 5, 0b1110_0000),
+        (as3935.AS3935._TRCO_CALIB, 58, 6, 0b1100_0000),
+        (as3935.AS3935._SRCO_CALIB, 59, 6, 0b1100_0000),
+        (as3935.AS3935._PRESET_DEFAULT, 60, 0, 0b1111_1111),
+        (as3935.AS3935._CALIB_RCO, 61, 0, 0b1111_1111),
     ],
 )
 def test_register_settings(register, addr, offset, mask):
@@ -300,14 +300,14 @@ def test_indoor_getter(get_reg, test_device, register_value, result):
     # The register value is 0x12 if Indoor mode is set
     get_reg.return_value = register_value
     assert test_device.indoor == result
-    get_reg.assert_called_once_with(test_device, as3935.AS3935._afe_gb)
+    get_reg.assert_called_once_with(test_device, as3935.AS3935._AFE_GB)
 
 
 @pytest.mark.parametrize("value, register_value", [(True, 0x12), (False, 0x0E)])
 def test_indoor_setter(set_reg, test_device, value, register_value):
     # Set the register value to 0x12 for Indoor mode and 0x0e for outdoor mode
     test_device.indoor = value
-    set_reg.assert_called_once_with(test_device, as3935.AS3935._afe_gb, register_value)
+    set_reg.assert_called_once_with(test_device, as3935.AS3935._AFE_GB, register_value)
     # Test that none bool values are rejected
     with pytest.raises(AssertionError):
         test_device.indoor = "1"
@@ -317,14 +317,14 @@ def test_indoor_setter(set_reg, test_device, value, register_value):
 def test_watchdog_getter(get_reg, test_device, value):
     get_reg.return_value = value
     assert test_device.watchdog == value
-    get_reg.assert_called_once_with(test_device, as3935.AS3935._wdth)
+    get_reg.assert_called_once_with(test_device, as3935.AS3935._WDTH)
 
 
 @pytest.mark.parametrize("value, out_of_range_value", [(0x00, -1), (0x0A, 0x0B)])
 def test_watchdog_setter(set_reg, test_device, value, out_of_range_value):
     # Test with maximum and minimum allowed values
     test_device.watchdog = value
-    set_reg.assert_called_once_with(test_device, as3935.AS3935._wdth, value)
+    set_reg.assert_called_once_with(test_device, as3935.AS3935._WDTH, value)
     # Test with out_of_range_values just outside acceptable range
     with pytest.raises(ValueError):
         test_device.watchdog = out_of_range_value
@@ -334,14 +334,14 @@ def test_watchdog_setter(set_reg, test_device, value, out_of_range_value):
 def test_noise_floor_limit_getter(get_reg, test_device, value):
     get_reg.return_value = value
     assert test_device.noise_floor_limit == value
-    get_reg.assert_called_once_with(test_device, as3935.AS3935._nf_lev)
+    get_reg.assert_called_once_with(test_device, as3935.AS3935._NF_LEV)
 
 
 @pytest.mark.parametrize("value, out_of_range_value", [(0x00, -1), (0x07, 0x08)])
 def test_noise_floor_limit_setter(set_reg, test_device, value, out_of_range_value):
     # Test with maximum and minimum allowed values
     test_device.noise_floor_limit = value
-    set_reg.assert_called_once_with(test_device, as3935.AS3935._nf_lev, value)
+    set_reg.assert_called_once_with(test_device, as3935.AS3935._NF_LEV, value)
     # Test with out_of_range_values just outside acceptable range
     with pytest.raises(ValueError):
         test_device.noise_floor_limit = out_of_range_value
@@ -351,14 +351,14 @@ def test_noise_floor_limit_setter(set_reg, test_device, value, out_of_range_valu
 def test_spike_threshold_getter(get_reg, test_device, value):
     get_reg.return_value = value
     assert test_device.spike_threshold == value
-    get_reg.assert_called_once_with(test_device, as3935.AS3935._srej)
+    get_reg.assert_called_once_with(test_device, as3935.AS3935._SREJ)
 
 
 @pytest.mark.parametrize("value, out_of_range_value", [(0x00, -1), (0x0B, 0x0C)])
 def test_spike_threshold_setter(set_reg, test_device, value, out_of_range_value):
     # Test with maximum and minimum allowed values
     test_device.spike_threshold = value
-    set_reg.assert_called_once_with(test_device, as3935.AS3935._srej, value)
+    set_reg.assert_called_once_with(test_device, as3935.AS3935._SREJ, value)
     # Test with out_of_range_values just outside acceptable range
     with pytest.raises(AssertionError):
         test_device.spike_threshold = out_of_range_value
@@ -367,9 +367,9 @@ def test_spike_threshold_setter(set_reg, test_device, value, out_of_range_value)
 def test_enery_getter(mocker, get_reg, test_device):
     get_reg.side_effect = [0x06, 0x55, 0x44]
     expected_calls = [
-        mocker.call(test_device, as3935.AS3935._s_lig_mm),
-        mocker.call(test_device, as3935.AS3935._s_lig_m),
-        mocker.call(test_device, as3935.AS3935._s_lig_l),
+        mocker.call(test_device, as3935.AS3935._S_LIG_MM),
+        mocker.call(test_device, as3935.AS3935._S_LIG_M),
+        mocker.call(test_device, as3935.AS3935._S_LIG_L),
     ]
     assert test_device.energy == 0x065544
     assert get_reg.call_count == 3
@@ -381,14 +381,14 @@ def test_distance_getter(get_reg, test_device, register_value, value):
     # Register = 0x01, storm overhead, register = 0x3f out of range, other values in km
     get_reg.return_value = register_value
     assert test_device.distance == value
-    get_reg.assert_called_once_with(test_device, as3935.AS3935._distance)
+    get_reg.assert_called_once_with(test_device, as3935.AS3935._DISTANCE)
 
 
 @pytest.mark.parametrize("value", [0x00, 0x01, 0x04, 0x08])
 def test_interrupt_status_getter(get_reg, test_device, value):
     get_reg.return_value = value
     assert test_device.interrupt_status == value
-    get_reg.assert_called_once_with(test_device, as3935.AS3935._int)
+    get_reg.assert_called_once_with(test_device, as3935.AS3935._INT)
 
 
 @pytest.mark.parametrize("register_value, result", [(0x01, True), (0x00, False)])
@@ -396,7 +396,7 @@ def test_disturber_mask_getter(get_reg, test_device, register_value, result):
     # If the register is set disturber events are ignored. If clear, disturbers cause interrupts.
     get_reg.return_value = register_value
     assert test_device.disturber_mask == result
-    get_reg.assert_called_once_with(test_device, as3935.AS3935._mask_dist)
+    get_reg.assert_called_once_with(test_device, as3935.AS3935._MASK_DIST)
 
 
 @pytest.mark.parametrize("value, register_value", [(True, 0x01), (False, 0x00)])
@@ -405,7 +405,7 @@ def test_disturber_mask_setter(set_reg, test_device, value, register_value):
     # Set the register value to 0x00 to allow disturber event interrupts.
     test_device.disturber_mask = value
     set_reg.assert_called_once_with(
-        test_device, as3935.AS3935._mask_dist, register_value
+        test_device, as3935.AS3935._MASK_DIST, register_value
     )
     # Test that none bool values are rejected
     with pytest.raises(AssertionError):
@@ -418,7 +418,7 @@ def test_disturber_mask_setter(set_reg, test_device, value, register_value):
 def test_strike_count_threshold_getter(get_reg, test_device, register_value, value):
     get_reg.return_value = register_value
     assert test_device.strike_count_threshold == value
-    get_reg.assert_called_once_with(test_device, as3935.AS3935._min_num_ligh)
+    get_reg.assert_called_once_with(test_device, as3935.AS3935._MIN_NUM_LIGH)
 
 
 @pytest.mark.parametrize(
@@ -431,7 +431,7 @@ def test_strike_count_threshold_setter(
     # Test with all allowable threshold values (1, 5, 9, 16)
     test_device.strike_count_threshold = value
     set_reg.assert_called_once_with(
-        test_device, as3935.AS3935._min_num_ligh, register_value
+        test_device, as3935.AS3935._MIN_NUM_LIGH, register_value
     )
     # Test with out_of_range_values
     with pytest.raises(ValueError):
@@ -440,9 +440,9 @@ def test_strike_count_threshold_setter(
 
 def test_clear_stats(mocker, set_reg, test_device):
     expected_calls = [
-        mocker.call(test_device, as3935.AS3935._cl_stat, 0x01),
-        mocker.call(test_device, as3935.AS3935._cl_stat, 0x00),
-        mocker.call(test_device, as3935.AS3935._cl_stat, 0x01),
+        mocker.call(test_device, as3935.AS3935._CL_STAT, 0x01),
+        mocker.call(test_device, as3935.AS3935._CL_STAT, 0x00),
+        mocker.call(test_device, as3935.AS3935._CL_STAT, 0x01),
     ]
     test_device.clear_stats()
     assert set_reg.call_count == 3
@@ -454,13 +454,13 @@ def test_power_down_getter(get_reg, test_device, register_value, result):
     # If the register is set the unit is powered off.
     get_reg.return_value = register_value
     assert test_device.power_down == result
-    get_reg.assert_called_once_with(test_device, as3935.AS3935._pwd)
+    get_reg.assert_called_once_with(test_device, as3935.AS3935._PWD)
 
 
 def test_power_down_setter_true(set_reg, test_device):
     # Test power_down True and False seperately because False is complicated.
     test_device.power_down = True
-    set_reg.assert_called_once_with(test_device, as3935.AS3935._pwd, 0x01)
+    set_reg.assert_called_once_with(test_device, as3935.AS3935._PWD, 0x01)
 
 
 def test_power_down_setter_false_and_power_is_down(
@@ -476,12 +476,12 @@ def test_power_down_setter_false_and_power_is_down(
     )
     mock_sleep = mocker.patch.object(as3935.time, "sleep")
     expected_calls = [
-        mocker.call(test_device, as3935.AS3935._pwd, 0x00),  # Power down
-        mocker.call(test_device, as3935.AS3935._disp_flags, 0x02),  # Set DISP_SRCO
-        mocker.call(test_device, as3935.AS3935._disp_flags, 0x00),  # Clear DISP_SRCO
+        mocker.call(test_device, as3935.AS3935._PWD, 0x00),  # Power down
+        mocker.call(test_device, as3935.AS3935._DISP_FLAGS, 0x02),  # Set DISP_SRCO
+        mocker.call(test_device, as3935.AS3935._DISP_FLAGS, 0x00),  # Clear DISP_SRCO
     ]
     test_device.power_down = False
-    get_reg.assert_called_once_with(test_device, as3935.AS3935._pwd)
+    get_reg.assert_called_once_with(test_device, as3935.AS3935._PWD)
     assert set_reg.call_args_list == expected_calls
     mock_calibrate_clocks.assert_called_once()
     mock_check_clock_calibration.assert_called_once()
@@ -495,7 +495,7 @@ def test_power_down_setter_false_and_power_is_up(mocker, set_reg, get_reg, test_
         as3935.AS3935, "_calibrate_clocks", autospec=True
     )
     test_device.power_down = False
-    get_reg.assert_called_once_with(test_device, as3935.AS3935._pwd)
+    get_reg.assert_called_once_with(test_device, as3935.AS3935._PWD)
     set_reg.assert_not_called()
     mock_calibrate_clocks.assert_not_called()
 
@@ -511,7 +511,7 @@ def test_power_down_setter_raises_an_error_when_called_with_invalid_args(test_de
 def test_freq_divisor_getter(get_reg, test_device, register_value, value):
     get_reg.return_value = register_value
     assert test_device.freq_divisor == value
-    get_reg.assert_called_once_with(test_device, as3935.AS3935._lco_fdiv)
+    get_reg.assert_called_once_with(test_device, as3935.AS3935._LCO_FDIV)
 
 
 @pytest.mark.parametrize(
@@ -524,7 +524,7 @@ def test_freq_divisor_setter(
     # Test with all allowable threshold values (1, 5, 9, 16)
     test_device.freq_divisor = value
     set_reg.assert_called_once_with(
-        test_device, as3935.AS3935._lco_fdiv, register_value
+        test_device, as3935.AS3935._LCO_FDIV, register_value
     )
     # Test with out_of_range_values
     with pytest.raises(ValueError):
@@ -537,7 +537,7 @@ def test_output_antenna_freq_getter(get_reg, test_device, register_value, result
     # Set the register value to 0x00 to disable antenna tuning mode.
     get_reg.return_value = register_value
     assert test_device.output_antenna_freq == result
-    get_reg.assert_called_once_with(test_device, as3935.AS3935._disp_flags)
+    get_reg.assert_called_once_with(test_device, as3935.AS3935._DISP_FLAGS)
 
 
 @pytest.mark.parametrize("value, register_value", [(True, 0x04), (False, 0x00)])
@@ -546,7 +546,7 @@ def test_output_antenna_freq_setter(set_reg, test_device, value, register_value)
     # Set the register value to 0x00 to disable antenna tuning mode.
     test_device.output_antenna_freq = value
     set_reg.assert_called_once_with(
-        test_device, as3935.AS3935._disp_flags, register_value
+        test_device, as3935.AS3935._DISP_FLAGS, register_value
     )
     # Test that none bool values are rejected
     with pytest.raises(AssertionError):
@@ -558,7 +558,7 @@ def test_output_srco_getter(get_reg, test_device, register_value, result):
     # If the register is set the SRCO clock is output on the interrupt pin.
     get_reg.return_value = register_value
     assert test_device.output_srco == result
-    get_reg.assert_called_once_with(test_device, as3935.AS3935._disp_flags)
+    get_reg.assert_called_once_with(test_device, as3935.AS3935._DISP_FLAGS)
 
 
 @pytest.mark.parametrize("value, register_value", [(True, 0x02), (False, 0x00)])
@@ -567,7 +567,7 @@ def test_output_srco_setter(set_reg, test_device, value, register_value):
     # Set the register value to 0x00 to allow normal interrupt operation.
     test_device.output_srco = value
     set_reg.assert_called_once_with(
-        test_device, as3935.AS3935._disp_flags, register_value
+        test_device, as3935.AS3935._DISP_FLAGS, register_value
     )
     # Test that none bool values are rejected
     with pytest.raises(AssertionError):
@@ -579,7 +579,7 @@ def test_output_trco_getter(get_reg, test_device, register_value, result):
     # If the register is set the TRCO clock is output on the interrupt pin.
     get_reg.return_value = register_value
     assert test_device.output_trco == result
-    get_reg.assert_called_once_with(test_device, as3935.AS3935._disp_flags)
+    get_reg.assert_called_once_with(test_device, as3935.AS3935._DISP_FLAGS)
 
 
 @pytest.mark.parametrize("value, register_value", [(True, 0x01), (False, 0x00)])
@@ -588,7 +588,7 @@ def test_output_trco_setter(set_reg, test_device, value, register_value):
     # Set the register value to 0x00 to allow normal interrupt operation.
     test_device.output_trco = value
     set_reg.assert_called_once_with(
-        test_device, as3935.AS3935._disp_flags, register_value
+        test_device, as3935.AS3935._DISP_FLAGS, register_value
     )
     # Test that none bool values are rejected
     with pytest.raises(AssertionError):
@@ -601,7 +601,7 @@ def test_output_trco_setter(set_reg, test_device, value, register_value):
 def test_tuning_capacitance_getter(get_reg, test_device, register_value, value):
     get_reg.return_value = register_value
     assert test_device.tuning_capacitance == value
-    get_reg.assert_called_once_with(test_device, as3935.AS3935._tun_cap)
+    get_reg.assert_called_once_with(test_device, as3935.AS3935._TUN_CAP)
 
 
 @pytest.mark.parametrize(
@@ -613,7 +613,7 @@ def test_tuning_capacitance_setter(
 ):
     # Test tuning capacitor settings in range 0 - 120 // 8 i.e. 0x00 - 0x0f
     test_device.tuning_capacitance = value
-    set_reg.assert_called_once_with(test_device, as3935.AS3935._tun_cap, register_value)
+    set_reg.assert_called_once_with(test_device, as3935.AS3935._TUN_CAP, register_value)
     # Test with out_of_range_values
     with pytest.raises(ValueError):
         test_device.tuning_capacitance = out_of_range_value
@@ -626,7 +626,7 @@ def test_calibrate_clocks_calls_correct_register_then_checks_calibration(
         as3935.AS3935, "_check_clock_calibration"
     )
     test_device._calibrate_clocks()
-    set_reg.assert_called_once_with(test_device, as3935.AS3935._calib_rco, 0x96)
+    set_reg.assert_called_once_with(test_device, as3935.AS3935._CALIB_RCO, 0x96)
     mock_check_clock_calibration.assert_called_once()
 
 
@@ -636,12 +636,12 @@ def test_check_clock_calibration_waits_for_calibration_to_finish(
     # Calibration complete when TRCO_CALIB_DONE and SRCO_CALIB_DONE are set
     get_reg.side_effect = [0x00, 0x00, 0x00, 0x02, 0x02, 0x02]
     expected_calls = [
-        mocker.call(test_device, as3935.AS3935._trco_calib),
-        mocker.call(test_device, as3935.AS3935._srco_calib),
-        mocker.call(test_device, as3935.AS3935._trco_calib),
-        mocker.call(test_device, as3935.AS3935._srco_calib),
-        mocker.call(test_device, as3935.AS3935._trco_calib),
-        mocker.call(test_device, as3935.AS3935._srco_calib),
+        mocker.call(test_device, as3935.AS3935._TRCO_CALIB),
+        mocker.call(test_device, as3935.AS3935._SRCO_CALIB),
+        mocker.call(test_device, as3935.AS3935._TRCO_CALIB),
+        mocker.call(test_device, as3935.AS3935._SRCO_CALIB),
+        mocker.call(test_device, as3935.AS3935._TRCO_CALIB),
+        mocker.call(test_device, as3935.AS3935._SRCO_CALIB),
     ]
     test_device._check_clock_calibration()
     assert get_reg.call_args_list == expected_calls
@@ -654,8 +654,8 @@ def test_check_clock_calibration_raises_exception_when_a_calibration_fails(
     # TRCO_CALIB_NOK and SRCO_CALIB_NOK are set if the respective calibration failed
     get_reg.side_effect = side_effects
     expected_calls = [
-        mocker.call(test_device, as3935.AS3935._trco_calib),
-        mocker.call(test_device, as3935.AS3935._srco_calib),
+        mocker.call(test_device, as3935.AS3935._TRCO_CALIB),
+        mocker.call(test_device, as3935.AS3935._SRCO_CALIB),
     ]
     with pytest.raises(RuntimeError):
         test_device._check_clock_calibration()
@@ -677,7 +677,7 @@ def test_check_clock_calibration_raises_exception_for_timeout(
 
 def test_reset(test_device, set_reg):
     test_device.reset()
-    set_reg.assert_called_once_with(test_device, as3935.AS3935._preset_default, 0x96)
+    set_reg.assert_called_once_with(test_device, as3935.AS3935._PRESET_DEFAULT, 0x96)
 
 
 @pytest.mark.parametrize(

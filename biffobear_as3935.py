@@ -131,27 +131,36 @@ class AS3935:
     DIRECT_COMMAND = const(0x96)
 
     # AS3935 registers
-    # _register_name = _Register(address, offset, mask)
-    _pwd = _Register(_0X00, _0X00, _0X01)
-    _afe_gb = _Register(_0X00, _0X01, _0X3E)
-    _wdth = _Register(_0X01, _0X00, _0X0F)
-    _nf_lev = _Register(_0X01, _0X04, _0X70)
-    _srej = _Register(_0X02, _0X00, _0X0F)
-    _min_num_ligh = _Register(_0X02, _0X04, _0X30)
-    _cl_stat = _Register(_0X02, _0X06, _0X40)
-    _int = _Register(_0X03, _0X00, _0X0F)
-    _mask_dist = _Register(_0X03, _0X05, _0X20)
-    _lco_fdiv = _Register(_0X03, _0X06, _0XC0)
-    _s_lig_l = _Register(_0X04, _0X00, _0XFF)
-    _s_lig_m = _Register(_0X05, _0X00, _0XFF)
-    _s_lig_mm = _Register(_0X06, _0X00, _0X1F)
-    _distance = _Register(_0X07, _0X00, _0X3F)
-    _tun_cap = _Register(_0X08, _0X00, _0X0F)
-    _disp_flags = _Register(_0X08, _0X05, _0XE0)
-    _trco_calib = _Register(_0X3A, _0X06, _0XC0)
-    _srco_calib = _Register(_0X3B, _0X06, _0XC0)
-    _preset_default = _Register(_0X3C, _0X00, _0XFF)
-    _calib_rco = _Register(_0X3D, _0X00, _0XFF)
+    # DISP_FLAGS combines DISP_LCO, DISP_SRCO and DISP_TRCO into a 3 bit register
+    # DISP_LCO - Display antenna frequency to interrupt pin
+    # DISP_SRCO - Display SRCO clock frequency to interrupt pin
+    # DISP_TRCO - Display TRCO clock frequency to interrupt pin
+    
+    # SCRO_CALIB and TRCO_CALIB combine the XXXX-CALIB_DONE and XXXX-CALIB-NOK regs into 2 bit regs
+    # XXXX_CALIB_DONE - Calibration completed successfully
+    # XXXX_CALIB_NOK - Calibration completed unsuccessfully
+    
+    # _REGISTER_NAME = _Register(address, offset, mask)
+    _PWD = _Register(_0X00, _0X00, _0X01)  # Sensor power down state
+    _AFE_GB = _Register(_0X00, _0X01, _0X3E)  # AFE gain boost
+    _WDTH = _Register(_0X01, _0X00, _0X0F)  # Watchdog threshold
+    _NF_LEV = _Register(_0X01, _0X04, _0X70)  # Noise floor level
+    _SREJ = _Register(_0X02, _0X00, _0X0F)  # Spike rejection
+    _MIN_NUM_LIGH = _Register(_0X02, _0X04, _0X30)  # Minimum number of lightning
+    _CL_STAT = _Register(_0X02, _0X06, _0X40)  # Clear statistics
+    _INT = _Register(_0X03, _0X00, _0X0F)  # Interrupt
+    _MASK_DIST = _Register(_0X03, _0X05, _0X20)  # Mask disturber
+    _LCO_FDIV = _Register(_0X03, _0X06, _0XC0)  # Frequency division ratio for antenna tuning
+    _S_LIG_L = _Register(_0X04, _0X00, _0XFF)  # Energy of single lightning LSBYTE
+    _S_LIG_M = _Register(_0X05, _0X00, _0XFF)  # Energy of single lightning MSBYTE
+    _S_LIG_MM = _Register(_0X06, _0X00, _0X1F)  # Energy of single lightning MMSBYTE
+    _DISTANCE = _Register(_0X07, _0X00, _0X3F)  # Distance estimation
+    _TUN_CAP = _Register(_0X08, _0X00, _0X0F)  # Internal tuning capacitance
+    _DISP_FLAGS = _Register(_0X08, _0X05, _0XE0)  # Display flags for output to interrupt pin
+    _TRCO_CALIB = _Register(_0X3A, _0X06, _0XC0)  # TRCO calibration result
+    _SRCO_CALIB = _Register(_0X3B, _0X06, _0XC0)  # SRCO calibration result
+    _PRESET_DEFAULT = _Register(_0X3C, _0X00, _0XFF)  # Set this to 0x96 to reset the sensor
+    _CALIB_RCO = _Register(_0X3D, _0X00, _0XFF)  # Set this to 0x96 to calibrate the clocks
 
     def __init__(self, spi, cs, *, interrupt_pin, baudrate=2_000_000):
         self._device = spi_dev.SPIDevice(
@@ -195,8 +204,8 @@ class AS3935:
         """bool: Get or set Indoor mode. This must be set to True if the sensor is used indoors.
         and False if the sensor is used outdoors.  Default is True.
         """
-        # Register _afe_gb is set to 0x12 for Indoor mode and 0x0e for outdoor mode
-        if self._get_register(self._afe_gb) == _0X12:
+        # Register _AFE_GB is set to 0x12 for Indoor mode and 0x0e for outdoor mode
+        if self._get_register(self._AFE_GB) == _0X12:
             return True
         return False
 
@@ -204,9 +213,9 @@ class AS3935:
     def indoor(self, value):
         assert isinstance(value, bool)
         if value:
-            self._set_register(self._afe_gb, _0X12)
+            self._set_register(self._AFE_GB, _0X12)
         else:
-            self._set_register(self._afe_gb, _0X0E)
+            self._set_register(self._AFE_GB, _0X0E)
 
     @property
     def watchdog(self):
@@ -215,12 +224,12 @@ class AS3935:
 
         Integer in the range 0 - 10. Default is 2.
         """
-        return self._get_register(self._wdth)
+        return self._get_register(self._WDTH)
 
     @watchdog.setter
     def watchdog(self, value):
         self._set_register(
-            self._wdth, _value_is_in_range(value, lo_limit=_0X00, hi_limit=_0X0A)
+            self._WDTH, _value_is_in_range(value, lo_limit=_0X00, hi_limit=_0X0A)
         )
 
     @property
@@ -231,12 +240,12 @@ class AS3935:
 
         Integer in the range 0 - 7. Default is 2.
         """
-        return self._get_register(self._nf_lev)
+        return self._get_register(self._NF_LEV)
 
     @noise_floor_limit.setter
     def noise_floor_limit(self, value):
         self._set_register(
-            self._nf_lev, _value_is_in_range(value, lo_limit=_0X00, hi_limit=_0X07)
+            self._NF_LEV, _value_is_in_range(value, lo_limit=_0X00, hi_limit=_0X07)
         )
 
     @property
@@ -246,13 +255,13 @@ class AS3935:
 
         Integer in the range 0 - 10. Default is 2.
         """
-        return self._get_register(self._srej)
+        return self._get_register(self._SREJ)
 
     @spike_threshold.setter
     def spike_threshold(self, value):
         assert _0X00 <= value <= _0X0B
         self._set_register(
-            self._srej, _value_is_in_range(value, lo_limit=_0X00, hi_limit=_0X0B)
+            self._SREJ, _value_is_in_range(value, lo_limit=_0X00, hi_limit=_0X0B)
         )
 
     @property
@@ -260,9 +269,9 @@ class AS3935:
         """int: The calculated energy of the last lightning strike. This is a
         dimensionless number.
         """
-        mmsb = self._get_register(self._s_lig_mm)
-        msb = self._get_register(self._s_lig_m)
-        lsb = self._get_register(self._s_lig_l)
+        mmsb = self._get_register(self._S_LIG_MM)
+        msb = self._get_register(self._S_LIG_M)
+        lsb = self._get_register(self._S_LIG_L)
         return ((mmsb << 16) | (msb << 8) | lsb) & 0x3FFFFF
 
     @property
@@ -271,7 +280,7 @@ class AS3935:
 
         Returns None if storm front is out of range (> 40 km).
         """
-        distance = self._get_register(self._distance)
+        distance = self._get_register(self._DISTANCE)
         if distance == 0x3F:  # Storm out of range
             distance = None
         elif distance == 0x01:  # Storm overhead
@@ -292,21 +301,21 @@ class AS3935:
         """
         # Wait a minimum of 2 ms between the interrupt pin going high and reading the register
         time.sleep(0.0002)
-        return self._get_register(self._int)
+        return self._get_register(self._INT)
 
     @property
     def disturber_mask(self):
         """bool: Disturber mask. If the mask is True, disturber events do not
         cause interrupts. Default is False.
         """
-        return bool(self._get_register(self._mask_dist))
+        return bool(self._get_register(self._MASK_DIST))
 
     @disturber_mask.setter
     def disturber_mask(self, value):
         # Set the register value to 0x01 to suppress disturber event interrupts
         # Set the register value to 0x00 to allow disturber event interrupts
         assert isinstance(value, bool)
-        self._set_register(self._mask_dist, int(value))
+        self._set_register(self._MASK_DIST, int(value))
 
     @property
     def strike_count_threshold(self):
@@ -317,27 +326,27 @@ class AS3935:
         Threshold may be 1, 5, 9, or 16. Default is 1.
         """
         # Convert the register value to the threshold
-        return _LIGHTNING_COUNT[self._get_register(self._min_num_ligh)]
+        return _LIGHTNING_COUNT[self._get_register(self._MIN_NUM_LIGH)]
 
     @strike_count_threshold.setter
     def strike_count_threshold(self, value):
         self._set_register(
-            self._min_num_ligh, _reg_value_from_choices(value, _LIGHTNING_COUNT)
+            self._MIN_NUM_LIGH, _reg_value_from_choices(value, _LIGHTNING_COUNT)
         )
 
     def clear_stats(self):
         """Clear statistics from lightning distance emulation block. This resets the
         data used to calculate the distance to the storm fron.
         """
-        self._set_register(self._cl_stat, 0x01)
-        self._set_register(self._cl_stat, 0x00)
-        self._set_register(self._cl_stat, 0x01)
+        self._set_register(self._CL_STAT, 0x01)
+        self._set_register(self._CL_STAT, 0x00)
+        self._set_register(self._CL_STAT, 0x01)
 
     @property
     def power_down(self):
         """bool: Power status. If True, the unit is powered off although the SPI bus remains
         active."""
-        return bool(self._get_register(self._pwd))
+        return bool(self._get_register(self._PWD))
 
     @power_down.setter
     def power_down(self, value):
@@ -347,17 +356,17 @@ class AS3935:
         # otherwise, power up the chip then calibrate and check the clocks
         assert isinstance(value, bool)  # Be specific because of Python's truthiness
         if value:
-            self._set_register(self._pwd, 0x01)
+            self._set_register(self._PWD, 0x01)
         elif self.power_down:
             # Only do this if the power_down mode is already set as clocks get calibrated
-            self._set_register(self._pwd, 0x00)
+            self._set_register(self._PWD, 0x00)
             # RCO clocks need to be calibrated when powering back up from a power_down
             # Procedure as per AS3935 datasheet
             self._calibrate_clocks()
             self._check_clock_calibration()
-            self._set_register(self._disp_flags, 0x02)
+            self._set_register(self._DISP_FLAGS, 0x02)
             time.sleep(0.002)
-            self._set_register(self._disp_flags, 0x00)
+            self._set_register(self._DISP_FLAGS, 0x00)
 
     @property
     def freq_divisor(self):
@@ -367,12 +376,12 @@ class AS3935:
         Value must be one of 16, 32, 64, or 128. Default is 16.
         """
         # Convert the register value to the divisor
-        return _FREQ_DIVISOR[self._get_register(self._lco_fdiv)]
+        return _FREQ_DIVISOR[self._get_register(self._LCO_FDIV)]
 
     @freq_divisor.setter
     def freq_divisor(self, value):
         self._set_register(
-            self._lco_fdiv, _reg_value_from_choices(value, _FREQ_DIVISOR)
+            self._LCO_FDIV, _reg_value_from_choices(value, _FREQ_DIVISOR)
         )
 
     @property
@@ -380,42 +389,42 @@ class AS3935:
         """bool: When True, the antenna resonant frequency is divided by the freq_divisor
         and output as a square wave on the interrupt pin. Default is False.
         """
-        return self._get_register(self._disp_flags) == 0x04
+        return self._get_register(self._DISP_FLAGS) == 0x04
 
     @output_antenna_freq.setter
     def output_antenna_freq(self, value):
         assert isinstance(value, bool)
         # Set the register value to 0x04 to enable antenna tuning mode
         # Set the register value to 0x00 to disable antenna tuning mode
-        self._set_register(self._disp_flags, int(value) << 2)
+        self._set_register(self._DISP_FLAGS, int(value) << 2)
 
     @property
     def output_srco(self):
         """bool: When True, output the SRCO clock signal on the interrupt pin.
         Default is False.
         """
-        return self._get_register(self._disp_flags) == 0x02
+        return self._get_register(self._DISP_FLAGS) == 0x02
 
     @output_srco.setter
     def output_srco(self, value):
         assert isinstance(value, bool)
         # Set the register value to 0x02 to output SRCO clock to the interrupt pin
         # Set the register value to 0x00 to allow normal interrupt operation
-        self._set_register(self._disp_flags, int(value) << 1)  # True is 0x02, False is 0x00
+        self._set_register(self._DISP_FLAGS, int(value) << 1)  # True is 0x02, False is 0x00
 
     @property
     def output_trco(self):
         """bool: When True, output the TRCO clock signal on the interrupt pin.
         Default is False.
         """
-        return self._get_register(self._disp_flags) == 1
+        return self._get_register(self._DISP_FLAGS) == 1
 
     @output_trco.setter
     def output_trco(self, value):
         assert isinstance(value, bool)
         # Set the register value to 0x01 to output SRCO clock to the interrupt pin
         # Set the register value to 0x00 to allow normal interrupt operation
-        self._set_register(self._disp_flags, int(value))  # True is 0x01, False is 0x00
+        self._set_register(self._DISP_FLAGS, int(value))  # True is 0x01, False is 0x00
 
     @property
     def tuning_capacitance(self):
@@ -426,12 +435,12 @@ class AS3935:
         however, the capacitance is set in steps of 8 pF, so values less than 120
         will be rounded down to the nearest step. Default is 0.
         """
-        return self._get_register(self._tun_cap) * 8
+        return self._get_register(self._TUN_CAP) * 8
 
     @tuning_capacitance.setter
     def tuning_capacitance(self, value):
         self._set_register(
-            self._tun_cap, _value_is_in_range(value, lo_limit=_0X00, hi_limit=120) // 8)
+            self._TUN_CAP, _value_is_in_range(value, lo_limit=_0X00, hi_limit=120) // 8)
 
     def _check_clock_calibration(self):
         """Check that clock calibration was successful."""
@@ -447,8 +456,8 @@ class AS3935:
                 raise OSError(
                     "Unable to communicate with the sensor. Check your wiring."
                 )
-            trco_result = self._get_register(self._trco_calib)
-            srco_result = self._get_register(self._srco_calib)
+            trco_result = self._get_register(self._TRCO_CALIB)
+            srco_result = self._get_register(self._SRCO_CALIB)
         if _0X01 in [trco_result, srco_result]:
             raise RuntimeError("AS3935 RCO clock calibration failed.")
 
@@ -456,13 +465,13 @@ class AS3935:
         """Recalibrate the internal clocks."""
         # Send the direct command to the CALIB_RCO register to start automatic RCO calibration
         # then check that the calibration has succeeded
-        self._set_register(self._calib_rco, self.DIRECT_COMMAND)
+        self._set_register(self._CALIB_RCO, self.DIRECT_COMMAND)
         self._check_clock_calibration()
 
     def reset(self):
         """Reset all the settings to the manufacturer's defaults."""
         # Send the direct command to the PRESET_DEFAUTLT register to start reset settings
-        self._set_register(self._preset_default, self.DIRECT_COMMAND)
+        self._set_register(self._PRESET_DEFAULT, self.DIRECT_COMMAND)
 
     @property
     def interrupt_set(self):
@@ -476,7 +485,7 @@ class AS3935:
         """
         # Return None if the interrupt pin is set to output a clock or antenna frequency,
         # otherwise, return the state of the interrupt pin
-        if self._get_register(self._disp_flags):
+        if self._get_register(self._DISP_FLAGS):
             return None
         return self._interrupt_pin.value
 
