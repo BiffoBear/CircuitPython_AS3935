@@ -14,8 +14,6 @@ from unittest.mock import PropertyMock
 import pytest
 from CircuitPython_AS3935 import biffobear_as3935 as as3935
 
-pytestmark = pytest.mark.skip(reason="Working elsewhere")
-
 
 @pytest.fixture
 def get_reg(mocker):
