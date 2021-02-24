@@ -158,48 +158,6 @@ def test_init_calls(mocker, int_pin, return_pin):
     mock_check_clock_calibration.assert_called_once()
 
 
-@pytest.mark.skip(reason="I don't know how to return a mock value for this.")
-def test_read_byte_in_populates_data_buffer():
-    # It would be nice to have a test for this. Meanwhile any problems will
-    # be seen when testing with an attached sensor.
-    pass
-
-
-def test_write_byte_out_calls_spi_dev_write_with_correct_kwargs(
-    test_device, test_register
-):
-    test_device._write_byte_out(test_register, 0x22)
-    for call_index in range(2):
-        name, _, kwargs = test_device._device.__enter__.return_value.mock_calls[
-            call_index
-        ]
-        assert name == "write"
-        assert kwargs == {"end": 1}
-
-
-@pytest.mark.parametrize("address, buffer", [(0x0F, 0x0F), (0x3F, 0x3F), (0xF0, 0x30)])
-def test_write_byte_out_sets_correct_bits_for_write_address(
-    test_device, address, buffer
-):
-    test_register = as3935._Register(address, 0x04, 0b0111_0000)
-    test_device._write_byte_out(test_register, 0b0000_0101)
-    assert test_device._ADDR_BUFFER[0] == buffer
-    name, args, _ = test_device._device.__enter__.return_value.mock_calls[0]
-    assert name == "write"
-    assert args == (test_device._ADDR_BUFFER,)
-
-
-@pytest.mark.parametrize("data, buffer", [(0x00, 0x00), (0x07, 0x07), (0xFF, 0xFF)])
-def test_write_byte_out_sends_data_buffer_for_write_address(
-    test_device, test_register, data, buffer
-):
-    test_device._write_byte_out(test_register, data)
-    assert test_device._DATA_BUFFER[0] == buffer
-    name, args, _ = test_device._device.__enter__.return_value.mock_calls[1]
-    assert name == "write"
-    assert args == (test_device._DATA_BUFFER,)
-
-
 @pytest.mark.parametrize(
     "register_byte, return_byte", [(0xFF, 0x07), (0x00, 0x00), (0x55, 0x05)]
 )
