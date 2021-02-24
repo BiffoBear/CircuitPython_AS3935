@@ -138,24 +138,21 @@ def test_init_method_called_with_correct_args(mocker):
     test_as3935 = as3935.AS3935(interrupt_pin="int")
     mock_init.assert_called_once_with(test_as3935, interrupt_pin="int")
 
-
-@pytest.mark.parametrize(
-    "int_pin, return_pin", [("interrupt1", "pin1"), ("interrupt2", "pin2")]
-)
+@pytest.mark.parametrize("int_pin, return_pin", [("int_pin1", "return_pin1"), ("int_pin2", "return_pin2")])
 def test_init_calls(mocker, int_pin, return_pin):
     mock_digital_in_out = mocker.patch.object(
-        as3935.digitalio, "DigitalInOut", autospec=True, return_value=return_pin
-    )
-    mock_interrupt_pin = mocker.patch.object(as3935.AS3935, "_interrupt_pin")
+        as3935.digitalio, "DigitalInOut", autospec=True)
+    mock_direction = mocker.patch.object(as3935.digitalio, "Direction", autospec=True)
+    mock_direction.INPUT.return_value = "return_pin"
     mock_reset = mocker.patch.object(as3935.AS3935, "reset", autospec=True)
     mock_check_clock_calibration = mocker.patch.object(
         as3935.AS3935, "_check_clock_calibration", autospec=True
     )
     # Test interrupt pin setup
-    test_as3935 = as3935.AS3935(interrupt_pin=interrupt)
-    mock_digital_in_out.assert_called_once_with(interrupt)
-    assert mock_interrupt_pin == return_pin
+    test_as3935 = as3935.AS3935(interrupt_pin=int_pin)
+    mock_digital_in_out.assert_called_once_with(int_pin)
     mock_check_clock_calibration.assert_called_once()
+    # Need to test pin direction setting
 
 
 @pytest.mark.parametrize(
