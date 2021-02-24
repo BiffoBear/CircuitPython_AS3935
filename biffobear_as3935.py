@@ -168,25 +168,23 @@ class AS3935:
     def __init__(self, *, interrupt_pin):
         self._interrupt_pin = digitalio.DigitalInOut(interrupt_pin)
         self._interrupt_pin.direction = digitalio.Direction.INPUT
-        self._as3935_startup_checks()
 
     def _read_byte_in(self, register):
         """Read one byte from the selected address."""
         # Stub for testing. Overridden by AS3935_SPI and AS3935_I2C
-        pass
 
     def _write_byte_out(self, register, data):
         """Write one byte to the selected address."""
         # Stub for testing. Overridden by AS3935_SPI and AS3935_I2C
-        pass
-        
+
     def _get_register(self, register):
         """Read the current register byte, mask and shift the value."""
         return (self._read_byte_in(register) & register.mask) >> register.offset
 
     def _set_register(self, register, value):
         """Read the byte containing the register, mask in the new value and write out the byte."""
-        byte = self._read_byte_in(register)
+        # Pylint is checking against a stub method that is overriden by subclasses
+        byte = self._read_byte_in(register)  # pylint: disable=assignment-from-no-return
         byte &= ~register.mask
         byte |= (value << register.offset) & _0XFF
         self._write_byte_out(register, byte)
@@ -483,15 +481,6 @@ class AS3935:
         if self._get_register(self._DISP_FLAGS):
             return None
         return self._interrupt_pin.value
-
-    def _as3935_startup_checks(self):
-        """Check communication with the AS3935 and confirm clocks are calibrated."""
-        # With no sensor connected, reading the SPI Device returns 0x00. After a reset
-        # the clocks are calibrated automatically. Therefore, resetting the sensor then
-        # checking the clock calibration status shows the that the clocks are OK and if
-        # the calibration times out, we know that there are no comms with the sensor
-        self.reset()
-        self._check_clock_calibration()
 
 
 class AS3935_SPI(AS3935):
