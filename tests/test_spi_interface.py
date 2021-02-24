@@ -27,7 +27,6 @@ def test_register():
     return as3935._Register(0x01, 0x04, 0b0111_0000)
 
 
-
 def test_as3925_spi_init_called_with_correct_args_and_kwargs(mocker):
     mock_init = mocker.patch.object(
         as3935.AS3935_SPI, "__init__", autospec=True, return_value=None
@@ -97,13 +96,17 @@ def test_spi_device_called_with_correct_baudrates(mocker):
     )
 
 
-@pytest.mark.parametrize("address, data_byte", [(0x01, 0x55), (0x3d, 0xaa)])
-def test_read_byte_in_calls_spi_dev_write_with_correct_arguments(mocker, address, data_byte):
+@pytest.mark.parametrize("address, data_byte", [(0x01, 0x55), (0x3D, 0xAA)])
+def test_read_byte_in_calls_spi_dev_with_correct_arguments(mocker, address, data_byte):
     mock_spi_device = mocker.patch.object(as3935.spi_dev, "SPIDevice", autospec=True)
-    mock_digitalinout = mocker.patch.object(as3935.digitalio, "DigitalInOut", autospec=True)
+    mock_digitalinout = mocker.patch.object(
+        as3935.digitalio, "DigitalInOut", autospec=True
+    )
     test_device = as3935.AS3935_SPI("spi", "cs", interrupt_pin="pin")
-    test_register = as3935._Register(address,0x00, 0x00)
+    test_register = as3935._Register(address, 0x00, 0x00)
     test_device._DATA_BUFFER[0] = data_byte
+    # Reset spi_device mock as it has been called during setup
+    mock_spi_device.reset_mock()
     result = test_device._read_byte_in(test_register)
     # Complex mocking to work with "with x as y:" constructs
     calls_to_spidevice = test_device._device.__enter__.return_value.mock_calls
@@ -117,7 +120,7 @@ def test_read_byte_in_calls_spi_dev_write_with_correct_arguments(mocker, address
     # Confirm that the bits 14 and 15 were set to 0 and 1 on the address in the buffer
     assert args[0][0] >> 6 == 0x01
     # Confirm that the _ADDR_BUFFER contains the correct address
-    assert args[0][0] & 0x3f == address
+    assert args[0][0] & 0x3F == address
     # Confirm that readinto was called and the result is correct
     name, args, kwargs = calls_to_spidevice[1]
     assert name == "readinto"
@@ -129,10 +132,35 @@ def test_read_byte_in_calls_spi_dev_write_with_correct_arguments(mocker, address
     assert result == test_device._DATA_BUFFER[0]
 
 
-# def test_read_byte_in_calls_spi_dev_readinto_with_correct_kwargs(
-#     test_device, test_register
-# ):
-#     test_device._read_byte_in(test_register)
-#     name, _, kwargs = test_device._device.__enter__.return_value.mock_calls[1]
-#     assert name == "readinto"
-#     assert kwargs == {"end": 1}
+@pytest.mark.parametrize("address, data_byte", [(0x01, 0x55), (0x3D, 0xAA)])
+def test_write_byte_out_calls_spi_dev_with_correct_arguments(
+    mocker, address, data_byte
+):
+    mock_spi_device = mocker.patch.object(as3935.spi_dev, "SPIDevice", autospec=True)
+    mock_digitalinout = mocker.patch.object(
+        as3935.digitalio, "DigitalInOut", autospec=True
+    )
+    test_device = as3935.AS3935_SPI("spi", "cs", interrupt_pin="pin")
+    test_register = as3935._Register(address, 0x00, 0x00)
+    # Reset spi_device mock as it has been called during setup
+    mock_spi_device.reset_mock()
+    result = test_device._write_byte_out(test_register, data_byte)
+    # Complex mocking to work with "with x as y:" constructs
+    calls_to_spidevice = test_device._device.__enter__.return_value.mock_calls
+    print(calls_to_spidevice)
+    # Confirm that write_out was called with the address byte
+    name, args, kwargs = calls_to_spidevice[0]
+    assert name == "write"
+    # Extract the contents of the buffer sent to write and compare to expected buffer
+    assert args[0][0] == test_device._ADDR_BUFFER[0]
+    # Confirm that the bits 14 and 15 were set to 0 and 0 on the address in the buffer
+    assert args[0][0] >> 6 == 0x00
+    # Confirm that the _ADDR_BUFFER contains the correct address
+    assert args[0][0] & 0x3F == address
+    # Confirm that write was called and the result is correct
+    name, args, kwargs = calls_to_spidevice[1]
+    assert name == "write"
+    # Confirm that only 1 byte is written
+    assert kwargs == {"end": 1}
+    # Confirm that the _DATA_BUFFER matches the buffer in write
+    assert args[0][0] == test_device._DATA_BUFFER[0]

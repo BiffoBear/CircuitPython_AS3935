@@ -491,7 +491,7 @@ class AS3935:
         """Check communication with the AS3935 and confirm clocks are calibrated."""
         # With no sensor connected, reading the SPI Device returns 0x00. After a reset
         # the clocks are calibrated automatically. Therefore, resetting the sensor then
-        # checking the clock calibration status tells the that the clocks are OK and if
+        # checking the clock calibration status shows the that the clocks are OK and if
         # the calibration times out, we know that there are no comms with the sensor
         self.reset()
         self._check_clock_calibration()
@@ -503,7 +503,7 @@ class AS3935_SPI(AS3935):
             spi, digitalio.DigitalInOut(cs), baudrate=baudrate, polarity=1, phase=0
         )
         super().__init__(interrupt_pin=interrupt_pin)
-        
+
     def _read_byte_in(self, register):
         """Read one byte from the selected address."""
         self._ADDR_BUFFER[0] = (
@@ -513,3 +513,12 @@ class AS3935_SPI(AS3935):
             device.write(self._ADDR_BUFFER, end=1)
             device.readinto(self._DATA_BUFFER, end=1)
             return self._DATA_BUFFER[0]
+
+
+def _write_byte_out(self, register, data):
+    """Write one byte to the selected register."""
+    self._ADDR_BUFFER[0] = register.addr & _0X3F  # Set bits 15 and 14 to 00 - write
+    self._DATA_BUFFER[0] = data
+    with self._device as device:
+        device.write(self._ADDR_BUFFER, end=1)
+        device.write(self._DATA_BUFFER, end=1)
