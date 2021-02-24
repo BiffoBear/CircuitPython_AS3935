@@ -21,12 +21,6 @@ from CircuitPython_AS3935 import biffobear_as3935 as as3935
 #     return as3935.AS3935_SPI(
 
 
-@pytest.fixture
-def test_register():
-    # Returns an instance of the Register named tuple
-    return as3935._Register(0x01, 0x04, 0b0111_0000)
-
-
 def test_as3925_spi_init_called_with_correct_args_and_kwargs(mocker):
     mock_init = mocker.patch.object(
         as3935.AS3935_SPI, "__init__", autospec=True, return_value=None
