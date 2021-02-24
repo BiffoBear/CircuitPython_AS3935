@@ -170,14 +170,6 @@ class AS3935:
         self._interrupt_pin.direction = digitalio.Direction.INPUT
         self._as3935_startup_checks()
 
-    def _write_byte_out(self, register, data):
-        """Write one byte to the selected register."""
-        self._ADDR_BUFFER[0] = register.addr & _0X3F  # Set bits 15 and 14 to 00 - write
-        self._DATA_BUFFER[0] = data
-        with self._device as device:
-            device.write(self._ADDR_BUFFER, end=1)
-            device.write(self._DATA_BUFFER, end=1)
-
     def _get_register(self, register):
         """Read the current register byte, mask and shift the value."""
         return (self._read_byte_in(register) & register.mask) >> register.offset

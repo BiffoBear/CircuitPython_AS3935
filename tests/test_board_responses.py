@@ -17,13 +17,11 @@ the lib folder.
 
 import os
 import time
-
 try:
     import pytest
 except ImportError:
     pass
 import board
-
 try:
     from CircuitPython_AS3935 import biffobear_as3935 as as3935
 except ImportError:
@@ -57,7 +55,7 @@ def setup_module():
         cs = board.D5
         interrupt = board.D7
 
-    device = as3935.AS3935(spi, cs, interrupt_pin=interrupt, baudrate=1_000_000)
+    device = as3935.AS3935_SPI(spi, cs, interrupt_pin=interrupt)
     device.reset()
 
 
@@ -67,7 +65,6 @@ def teardown_module():
 
 
 def test_indoor_outdoor():
-    # Out = not indoor so no seperate test required.
     assert device.indoor is True  # Chip default
     device.indoor = False
     assert device.indoor is False
