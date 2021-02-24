@@ -107,16 +107,11 @@ class AS3935:
     distance to the storm front. Antenna trimming, clock calibration, etc. are also
     implemented.
 
-    :param busio.SPI spi: The SPI bus connected to the chip.  Ensure SCK, MOSI, and MISO are
-        connected.
-    :param ~board.Pin cs: The pin connected to the chip's CS/chip select line.
     :param ~board.Pin interrupt_pin: The pin connected to the chip's interrupt line. Note
         that CircuitPython currently does not support interrupts, but the line is held high
         for at least one second per event, so it may be polled. Some single board computers,
         e.g. the Raspberry Pi, do support interrupts.
-    :param int baudrate: Defaults to 2,000,000 which is the maximum supported by the chip. If
-        another baudrate is selected, avoid +/- 500,000 as this will interfere with the chip's
-        antenna.
+
     """
 
     # Global bufferS for SPI commands and address
@@ -498,6 +493,16 @@ class AS3935:
 
 
 class AS3935_SPI(AS3935):
+    """Driver for the Franklin AS3935 lightning detector chip connected to the SPI bus.
+
+    :param busio.SPI spi: The SPI bus connected to the chip.  Ensure SCK, MOSI, and MISO are
+        connected.
+    :param ~board.Pin cs: The pin connected to the chip's CS/chip select line.
+    :param int baudrate: Clock rate. Default is 2,000,000 which is the maximum supported by the
+        chip. If another baudrate is selected, avoid +/- 500,000 as this will interfere with the
+        chip's antenna.
+    """
+
     def __init__(self, spi, cs, *, baudrate=2_000_000, interrupt_pin):
         self._device = spi_dev.SPIDevice(
             spi, digitalio.DigitalInOut(cs), baudrate=baudrate, polarity=1, phase=0
@@ -514,11 +519,10 @@ class AS3935_SPI(AS3935):
             device.readinto(self._DATA_BUFFER, end=1)
             return self._DATA_BUFFER[0]
 
-
-def _write_byte_out(self, register, data):
-    """Write one byte to the selected register."""
-    self._ADDR_BUFFER[0] = register.addr & _0X3F  # Set bits 15 and 14 to 00 - write
-    self._DATA_BUFFER[0] = data
-    with self._device as device:
-        device.write(self._ADDR_BUFFER, end=1)
-        device.write(self._DATA_BUFFER, end=1)
+    def _write_byte_out(self, register, data):
+        """Write one byte to the selected address."""
+        self._ADDR_BUFFER[0] = register.addr & _0X3F  # Set bits 15 and 14 to 00 - write
+        self._DATA_BUFFER[0] = data
+        with self._device as device:
+            device.write(self._ADDR_BUFFER, end=1)
+            device.write(self._DATA_BUFFER, end=1)
