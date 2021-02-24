@@ -175,16 +175,6 @@ class AS3935:
         self._interrupt_pin.direction = digitalio.Direction.INPUT
         self._as3935_startup_checks()
 
-    def _read_byte_in(self, register):
-        """Read one byte from the selected address."""
-        self._ADDR_BUFFER[0] = (
-            register.addr & _0X3F
-        ) | _0X40  # Set bits 15 and 14 to 01 - read
-        with self._device as device:
-            device.write(self._ADDR_BUFFER, end=1)
-            device.readinto(self._DATA_BUFFER, end=1)
-            return self._DATA_BUFFER[0]
-
     def _write_byte_out(self, register, data):
         """Write one byte to the selected register."""
         self._ADDR_BUFFER[0] = register.addr & _0X3F  # Set bits 15 and 14 to 00 - write
@@ -513,3 +503,13 @@ class AS3935_SPI(AS3935):
             spi, digitalio.DigitalInOut(cs), baudrate=baudrate, polarity=1, phase=0
         )
         super().__init__(interrupt_pin=interrupt_pin)
+        
+    def _read_byte_in(self, register):
+        """Read one byte from the selected address."""
+        self._ADDR_BUFFER[0] = (
+            register.addr & _0X3F
+        ) | _0X40  # Set bits 15 and 14 to 01 - read
+        with self._device as device:
+            device.write(self._ADDR_BUFFER, end=1)
+            device.readinto(self._DATA_BUFFER, end=1)
+            return self._DATA_BUFFER[0]
