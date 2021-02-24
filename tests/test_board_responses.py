@@ -17,11 +17,13 @@ the lib folder.
 
 import os
 import time
+
 try:
     import pytest
 except ImportError:
     pass
 import board
+
 try:
     from CircuitPython_AS3935 import biffobear_as3935 as as3935
 except ImportError:
