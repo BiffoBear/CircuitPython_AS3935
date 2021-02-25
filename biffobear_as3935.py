@@ -32,6 +32,7 @@ from collections import namedtuple
 from micropython import const
 import digitalio
 import adafruit_bus_device.spi_device as spi_dev
+import adafruit_bus_device.i2c_device as i2c_dev
 
 
 __version__ = "0.0.0-auto.0"
@@ -79,18 +80,17 @@ _FREQ_DIVISOR = (_0X10, _0X20, _0X40, _0X80)
 
 
 def as3935_spi(spi, cs_pin, baudrate=1_000_000, *, interrupt_pin):
-    """Creates an instance of the Franklin AS3935 driver with a SPI connection.
+    """Creates an instance of the Franklin AS3935 driver with a SPI bus connection.
 
     :param busio.SPI spi: The SPI bus connected to the chip.  Ensure SCK, MOSI, and MISO are
         connected.
     :param ~board.Pin cs: The pin connected to the chip's CS/chip select line.
+    :param int baudrate: SPI bus baudrate. Defaults to 1,000,000 . If another baudrate is
+        selected, avoid +/- 500,000 as this may interfere with the chip's antenna.
     :param ~board.Pin interrupt_pin: The pin connected to the chip's interrupt line. Note
         that CircuitPython currently does not support interrupts, but the line is held high
         for at least one second per event, so it may be polled. Some single board computers,
         e.g. the Raspberry Pi, do support interrupts.
-    :param int baudrate: Defaults to 2,000,000 which is the maximum supported by the chip. If
-        another baudrate is selected, avoid +/- 500,000 as this will interfere with the chip's
-        antenna.
     """
     return AS3935(
         bus=spi_dev.SPIDevice(
@@ -99,6 +99,18 @@ def as3935_spi(spi, cs_pin, baudrate=1_000_000, *, interrupt_pin):
         interrupt_pin=interrupt_pin,
     )
 
+def as3935_i2c(i2c, address=0x03, *, interrupt_pin):
+    """Creates an instance of the Franklin AS3935 driver with an I2C bus connection.
+
+    :param busio.I2C spi: The I2C bus connected to the chip.  Ensure SDA, and SCL are
+        connected.
+    :param int address: The I2C address of the chip. Default is 0x03.
+    :param ~board.Pin interrupt_pin: The pin connected to the chip's interrupt line. Note
+        that CircuitPython currently does not support interrupts, but the line is held high
+        for at least one second per event, so it may be polled. Some single board computers,
+        e.g. the Raspberry Pi, do support interrupts.
+    """
+    return AS3935(bus=i2c_dev.I2CDevice(i2c, address), interrupt_pin=interrupt_pin)
 
 def _reg_value_from_choices(value, choices):
     """Return the index of a value from an iterable."""
