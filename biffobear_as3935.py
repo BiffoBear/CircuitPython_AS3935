@@ -5,11 +5,10 @@
 `biffobear_as3935`
 ================================================================================
 
-CircuitPython driver library for the AS3935 lightning detector.
+CircuitPython driver library for the AS3935 lightning detector over SPI or I2C
+buses.
 
-.. warning:: The AS3935 chip supports I2C but Sparkfun found it unreliable so
-   this driver is SPI only.
-
+.. warning:: The AS3935 chip supports I2C but Sparkfun found it unreliable.
 
 * Author(s): Martin Stephens
 
@@ -123,7 +122,7 @@ def _value_is_in_range(value, *, lo_limit, hi_limit):
 
 
 class AS3935:
-    """Supports the Franklin AS3935 lightning detector chip via the SPI interface. Allows
+    """Supports the Franklin AS3935 lightning detector chip via SPI and I2C interface. Allows
     monitoring for lightning events by polling an 'interrupt' pin that is held high for one
     second after an event. Allows reading strength of the last strike and estimated
     distance to the storm front. Antenna trimming, clock calibration, etc. are also
@@ -182,7 +181,7 @@ class AS3935:
     )  # Set this to 0x96 to calibrate the clocks
 
     def __init__(self, *, bus, interrupt_pin):
-        self._device = bus
+        self._bus = bus
         self._interrupt_pin = digitalio.DigitalInOut(interrupt_pin)
         self._interrupt_pin.direction = digitalio.Direction.INPUT
         self._as3935_startup_checks()
@@ -192,7 +191,7 @@ class AS3935:
         self._ADDR_BUFFER[0] = (
             register.addr & _0X3F
         ) | _0X40  # Set bits 15 and 14 to 01 - read
-        with self._device as device:
+        with self._bus as device:
             device.write(self._ADDR_BUFFER, end=1)
             device.readinto(self._DATA_BUFFER, end=1)
             return self._DATA_BUFFER[0]
@@ -201,7 +200,7 @@ class AS3935:
         """Write one byte to the selected register."""
         self._ADDR_BUFFER[0] = register.addr & _0X3F  # Set bits 15 and 14 to 00 - write
         self._DATA_BUFFER[0] = data
-        with self._device as device:
+        with self._bus as device:
             device.write(self._ADDR_BUFFER, end=1)
             device.write(self._DATA_BUFFER, end=1)
 

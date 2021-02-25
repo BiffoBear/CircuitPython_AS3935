@@ -166,7 +166,7 @@ def test_read_byte_in_calls_spi_dev_write_with_correct_arguments(
 ):
     test_device._read_byte_in(test_register)
     # Complex mocking to work with "with x as y" constructs
-    name, _, kwargs = test_device._device.__enter__.return_value.mock_calls[0]
+    name, _, kwargs = test_device._bus.__enter__.return_value.mock_calls[0]
     assert name == "write"
     assert kwargs == {"end": 1}
 
@@ -176,7 +176,7 @@ def test_read_byte_in_calls_spi_dev_readinto_with_correct_kwargs(
 ):
     test_device._read_byte_in(test_register)
     # Complex mocking to work with "with x as y" constructs
-    name, _, kwargs = test_device._device.__enter__.return_value.mock_calls[1]
+    name, _, kwargs = test_device._bus.__enter__.return_value.mock_calls[1]
     assert name == "readinto"
     assert kwargs == {"end": 1}
 
@@ -186,7 +186,7 @@ def test_read_byte_in_sets_correct_bits_for_read_address(test_device, address, b
     test_register = as3935._Register(address, 0x04, 0b0111_0000)
     test_device._read_byte_in(test_register)
     # Complex mocking to work with "with x as y" constructs
-    name, args, _ = test_device._device.__enter__.return_value.mock_calls[0]
+    name, args, _ = test_device._bus.__enter__.return_value.mock_calls[0]
     assert test_device._ADDR_BUFFER[0] == buffer
     assert name == "write"
     assert args == (test_device._ADDR_BUFFER,)
@@ -204,7 +204,7 @@ def test_write_byte_out_calls_spi_dev_write_with_correct_kwargs(
 ):
     test_device._write_byte_out(test_register, 0x22)
     for call_index in range(2):
-        name, _, kwargs = test_device._device.__enter__.return_value.mock_calls[
+        name, _, kwargs = test_device._bus.__enter__.return_value.mock_calls[
             call_index
         ]
         assert name == "write"
@@ -218,7 +218,7 @@ def test_write_byte_out_sets_correct_bits_for_write_address(
     test_register = as3935._Register(address, 0x04, 0b0111_0000)
     test_device._write_byte_out(test_register, 0b0000_0101)
     assert test_device._ADDR_BUFFER[0] == buffer
-    name, args, _ = test_device._device.__enter__.return_value.mock_calls[0]
+    name, args, _ = test_device._bus.__enter__.return_value.mock_calls[0]
     assert name == "write"
     assert args == (test_device._ADDR_BUFFER,)
 
@@ -229,7 +229,7 @@ def test_write_byte_out_sends_data_buffer_for_write_address(
 ):
     test_device._write_byte_out(test_register, data)
     assert test_device._DATA_BUFFER[0] == buffer
-    name, args, _ = test_device._device.__enter__.return_value.mock_calls[1]
+    name, args, _ = test_device._bus.__enter__.return_value.mock_calls[1]
     assert name == "write"
     assert args == (test_device._DATA_BUFFER,)
 
