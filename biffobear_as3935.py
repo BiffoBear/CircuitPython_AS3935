@@ -79,6 +79,10 @@ _LIGHTNING_COUNT = (_0X01, _0X05, _0X09, _0X10)
 _FREQ_DIVISOR = (_0X10, _0X20, _0X40, _0X80)
 
 
+def as3935_spi():
+    pass
+
+
 def _reg_value_from_choices(value, choices):
     """Return the index of a value from an iterable."""
     try:
