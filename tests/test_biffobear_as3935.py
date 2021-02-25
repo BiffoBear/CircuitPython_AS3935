@@ -28,10 +28,8 @@ def set_reg(mocker):
 @pytest.fixture
 def test_device(mocker):
     # Returns an instance of the AS3935 driver with SDIDevice patched.
-    # mocker.patch.object(as3935.spi_dev, "SPIDevice")
-    # mocker.patch.object(as3935.digitalio, "DigitalInOut")
+    mocker.patch.object(as3935.digitalio, "DigitalInOut")
     mocker.patch.object(as3935.AS3935, "_as3935_startup_checks", return_value=None)
-    # mocker.patch.object(as3935.AS3935, "reset", return_value=None)
     return as3935.AS3935(bus=mocker.MagicMock(name="bus"), interrupt_pin="int_pin")
 
 
