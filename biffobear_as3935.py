@@ -135,11 +135,11 @@ class AS3935:
     # DISP_LCO - Display antenna frequency to interrupt pin
     # DISP_SRCO - Display SRCO clock frequency to interrupt pin
     # DISP_TRCO - Display TRCO clock frequency to interrupt pin
-    
+
     # SCRO_CALIB and TRCO_CALIB combine the XXXX-CALIB_DONE and XXXX-CALIB-NOK regs into 2 bit regs
     # XXXX_CALIB_DONE - Calibration completed successfully
     # XXXX_CALIB_NOK - Calibration completed unsuccessfully
-    
+
     # _REGISTER_NAME = _Register(address, offset, mask)
     _PWD = _Register(_0X00, _0X00, _0X01)  # Sensor power down state
     _AFE_GB = _Register(_0X00, _0X01, _0X3E)  # AFE gain boost
@@ -150,17 +150,25 @@ class AS3935:
     _CL_STAT = _Register(_0X02, _0X06, _0X40)  # Clear statistics
     _INT = _Register(_0X03, _0X00, _0X0F)  # Interrupt
     _MASK_DIST = _Register(_0X03, _0X05, _0X20)  # Mask disturber
-    _LCO_FDIV = _Register(_0X03, _0X06, _0XC0)  # Frequency division ratio for antenna tuning
+    _LCO_FDIV = _Register(
+        _0X03, _0X06, _0XC0
+    )  # Frequency division ratio for antenna tuning
     _S_LIG_L = _Register(_0X04, _0X00, _0XFF)  # Energy of single lightning LSBYTE
     _S_LIG_M = _Register(_0X05, _0X00, _0XFF)  # Energy of single lightning MSBYTE
     _S_LIG_MM = _Register(_0X06, _0X00, _0X1F)  # Energy of single lightning MMSBYTE
     _DISTANCE = _Register(_0X07, _0X00, _0X3F)  # Distance estimation
     _TUN_CAP = _Register(_0X08, _0X00, _0X0F)  # Internal tuning capacitance
-    _DISP_FLAGS = _Register(_0X08, _0X05, _0XE0)  # Display flags for output to interrupt pin
+    _DISP_FLAGS = _Register(
+        _0X08, _0X05, _0XE0
+    )  # Display flags for output to interrupt pin
     _TRCO_CALIB = _Register(_0X3A, _0X06, _0XC0)  # TRCO calibration result
     _SRCO_CALIB = _Register(_0X3B, _0X06, _0XC0)  # SRCO calibration result
-    _PRESET_DEFAULT = _Register(_0X3C, _0X00, _0XFF)  # Set this to 0x96 to reset the sensor
-    _CALIB_RCO = _Register(_0X3D, _0X00, _0XFF)  # Set this to 0x96 to calibrate the clocks
+    _PRESET_DEFAULT = _Register(
+        _0X3C, _0X00, _0XFF
+    )  # Set this to 0x96 to reset the sensor
+    _CALIB_RCO = _Register(
+        _0X3D, _0X00, _0XFF
+    )  # Set this to 0x96 to calibrate the clocks
 
     def __init__(self, spi, cs, *, interrupt_pin, baudrate=2_000_000):
         self._device = spi_dev.SPIDevice(
@@ -410,7 +418,9 @@ class AS3935:
         assert isinstance(value, bool)
         # Set the register value to 0x02 to output SRCO clock to the interrupt pin
         # Set the register value to 0x00 to allow normal interrupt operation
-        self._set_register(self._DISP_FLAGS, int(value) << 1)  # True is 0x02, False is 0x00
+        self._set_register(
+            self._DISP_FLAGS, int(value) << 1
+        )  # True is 0x02, False is 0x00
 
     @property
     def output_trco(self):
@@ -440,7 +450,8 @@ class AS3935:
     @tuning_capacitance.setter
     def tuning_capacitance(self, value):
         self._set_register(
-            self._TUN_CAP, _value_is_in_range(value, lo_limit=_0X00, hi_limit=120) // 8)
+            self._TUN_CAP, _value_is_in_range(value, lo_limit=_0X00, hi_limit=120) // 8
+        )
 
     def _check_clock_calibration(self):
         """Check that clock calibration was successful."""

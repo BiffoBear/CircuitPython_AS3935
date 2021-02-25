@@ -176,7 +176,9 @@ def test_init_calls(mocker, spi_dev, spi, cs, interrupt, int_pin):
     # assert test_as3935._interrupt_pin == int_pin
 
 
-def test_read_byte_in_calls_spi_dev_write_with_correct_arguments(test_device, test_register):
+def test_read_byte_in_calls_spi_dev_write_with_correct_arguments(
+    test_device, test_register
+):
     test_device._read_byte_in(test_register)
     # Complex mocking to work with "with x as y" constructs
     name, _, kwargs = test_device._device.__enter__.return_value.mock_calls[0]
