@@ -81,7 +81,7 @@ _FREQ_DIVISOR = (_0X10, _0X20, _0X40, _0X80)
 
 def as3935_spi(spi, cs, baudrate=1_000_000, *, interrupt_pin):
     """Creates an instance of the Franklin AS3935 driver with a SPI connection.
-    
+
     :param busio.SPI spi: The SPI bus connected to the chip.  Ensure SCK, MOSI, and MISO are
         connected.
     :param ~board.Pin cs: The pin connected to the chip's CS/chip select line.
@@ -92,7 +92,6 @@ def as3935_spi(spi, cs, baudrate=1_000_000, *, interrupt_pin):
     :param int baudrate: Defaults to 2,000,000 which is the maximum supported by the chip. If
         another baudrate is selected, avoid +/- 500,000 as this will interfere with the chip's
         antenna.
-
     """
     return AS3935(
         bus=spi_dev.SPIDevice(
@@ -137,7 +136,7 @@ class AS3935:
         that CircuitPython currently does not support interrupts, but the line is held high
         for at least one second per event, so it may be polled. Some single board computers,
         e.g. the Raspberry Pi, do support interrupts.
-    :param int baudrate: Defaults to 2,000,000 which is the maximum supported by the chip. If
+    :param int baudrate: Defaults to 1,000,000 which is the maximum supported by the chip. If
         another baudrate is selected, avoid +/- 500,000 as this will interfere with the chip's
         antenna.
     """
@@ -193,13 +192,11 @@ class AS3935:
         _0X3D, _0X00, _0XFF
     )  # Set this to 0x96 to calibrate the clocks
 
-    def __init__(self, spi, cs, *, interrupt_pin, baudrate=2_000_000):
-        self._device = spi_dev.SPIDevice(
-            spi, digitalio.DigitalInOut(cs), baudrate=baudrate, polarity=1, phase=0
-        )
-        self._as3935_startup_checks()
+    def __init__(self, *, bus, interrupt_pin):
+        self._device = bus
         self._interrupt_pin = digitalio.DigitalInOut(interrupt_pin)
         self._interrupt_pin.direction = digitalio.Direction.INPUT
+        self._as3935_startup_checks()
 
     def _read_byte_in(self, register):
         """Read one byte from the selected address."""

@@ -32,7 +32,7 @@ def test_device(mocker):
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
     mocker.patch.object(as3935.AS3935, "_as3935_startup_checks", return_value=None)
     # mocker.patch.object(as3935.AS3935, "reset", return_value=None)
-    return as3935.AS3935("spi", "cs", interrupt_pin="int", baudrate=1_000_000)
+    return as3935.AS3935(bus=mocker.MagicMock(name="bus"), interrupt_pin="int_pin")
 
 
 @pytest.fixture
@@ -93,7 +93,7 @@ def test_other_constants():
     assert as3935.AS3935.DIRECT_COMMAND == 0x96
 
 
-def test_spi_command_buffers():
+def test_address_and_data_command_buffers():
     assert isinstance(as3935.AS3935._ADDR_BUFFER, bytearray)
     assert len(as3935.AS3935._ADDR_BUFFER) == 1
     assert isinstance(as3935.AS3935._DATA_BUFFER, bytearray)
@@ -136,49 +136,16 @@ def test_init_method_called_with_correct_args(mocker):
     mock_init = mocker.patch.object(
         as3935.AS3935, "__init__", autospec=True, return_value=None
     )
-    test_as3935 = as3935.AS3935("spi", "cs", interrupt_pin="int", baudrate=2_000_000)
+    test_as3935 = as3935.AS3935(bus="bus", interrupt_pin="pin")
     mock_init.assert_called_once_with(
-        test_as3935, "spi", "cs", interrupt_pin="int", baudrate=2_000_000
-    )
+        test_as3935, bus="bus", interrupt_pin="pin")
 
 
-@pytest.mark.skip(reason="This is a mess. Refactor it.")
-@pytest.mark.parametrize(
-    "spi_dev, spi, cs, interrupt, int_pin",
-    [
-        ("SPI-Dev1", "SPI-1", "cs1", "interrupt1", "pin1"),
-        ("SPI-Dev2", "SPI-2", "cs2", "interrupt2", "pin2"),
-    ],
-)
-def test_init_calls(mocker, spi_dev, spi, cs, interrupt, int_pin):
-    mock_spi_dev = mocker.patch.object(
-        as3935.spi_dev, "SPIDevice", autospec=True, return_value=spi_dev
-    )
-    mock_digital_in_out = mocker.patch.object(as3935.digitalio, "DigitalInOut")
-    # Test that init sets up a SPIDevice with the correct args.
-    test_as3935 = as3935.AS3935(spi, cs, interrupt_pin=interrupt, baudrate=1_000_000)
-    mock_spi_dev.assert_called_once_with(
-        spi, cs, baudrate=1_000_000, polarity=1, phase=0
-    )
-    assert test_as3935._device == spi_dev
-    # Test that init sets up a SPIDevice with a default baudrate.
-    mock_spi_dev.reset_mock(return_value=spi_dev)
-    as3935.AS3935(spi, cs, interrupt_pin=interrupt)
-    mock_spi_dev.assert_called_once_with(
-        spi, cs, baudrate=2_000_000, polarity=1, phase=0
-    )
-    # Test interrupt pin setup
-    mock_digital_in_out.reset_mock()
-    test_as3935 = as3935.AS3935(spi, cs, interrupt_pin=interrupt)
-    mock_digital_in_out.assert_called_once_with(interrupt)
-    assert test_as3935._cs == cs
-    # Don't know why next line fails.
-    # assert test_as3935._interrupt_pin == int_pin
+@pytest.mark.parametrize("bus, int_pin, int_pin_out", [("bus1", "int_pin1", "int_pin_out1"), ("bus2", "int_pin2", "int_pin_out2")])
+def test_init_calls(mocker, bus, int_pin, int_pin_out):
 
 
-def test_read_byte_in_calls_spi_dev_write_with_correct_arguments(
-    test_device, test_register
-):
+def test_read_byte_in_calls_spi_dev_write_with_correct_arguments(mocker,test_register):
     test_device._read_byte_in(test_register)
     # Complex mocking to work with "with x as y" constructs
     name, _, kwargs = test_device._device.__enter__.return_value.mock_calls[0]
@@ -186,10 +153,9 @@ def test_read_byte_in_calls_spi_dev_write_with_correct_arguments(
     assert kwargs == {"end": 1}
 
 
-def test_read_byte_in_calls_spi_dev_readinto_with_correct_kwargs(
-    test_device, test_register
-):
+def test_read_byte_in_calls_spi_dev_readinto_with_correct_kwargs(test_device, test_register):
     test_device._read_byte_in(test_register)
+    # Complex mocking to work with "with x as y" constructs
     name, _, kwargs = test_device._device.__enter__.return_value.mock_calls[1]
     assert name == "readinto"
     assert kwargs == {"end": 1}
@@ -696,31 +662,14 @@ def test_interrupt_set(
     assert test_device.interrupt_set is return_value
 
 
-def test_as3935_startup_checks(mocker, get_reg):
-    # Mock out the __init__ function so that SPIDevice and pin assignments aren't called.
-    mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
-    # Mock functions that should be called by the startup checks function.
+def test_as3935_startup_checks(mocker, test_device):
     mock_reset = mocker.patch.object(
         as3935.AS3935, "reset", autospec=True, return_value=None
     )
     mock_check_clock_calibration = mocker.patch.object(
         as3935.AS3935, "_check_clock_calibration", autospec=True, return_value=None
     )
-    # Confirm functions were called
-    test_as3935 = as3935.AS3935("spi", "cs", interrupt_pin="pin")
-    test_as3935._as3935_startup_checks()
-    # Confirm reset was called
+    # Confirm reset and check clock calibration functions were called
+    test_device._as3935_startup_checks()
     mock_reset.assert_called_once()
-    # Confirm _check_clock_calibration was called. If the chip is not responding, this will time
-    # out, so it checks the clocks and communication.
     mock_check_clock_calibration.assert_called_once()
-
-
-def test_that_as3935_startup_checks_is_called(mocker):
-    mock_as3935_startup_checks = mocker.patch.object(
-        as3935.AS3935, "_as3935_startup_checks"
-    )
-    mocker.patch.object(as3935.spi_dev, "SPIDevice")
-    mocker.patch.object(as3935.digitalio, "DigitalInOut")
-    as3935.AS3935("spi", "cs", interrupt_pin="pin")
-    mock_as3935_startup_checks.assert_called_once()
