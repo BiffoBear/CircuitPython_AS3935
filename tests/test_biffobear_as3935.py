@@ -41,7 +41,6 @@ def test_register():
     return as3935._Register(0x01, 0x04, 0b0111_0000)
 
 
-@pytest.mark.skip
 def test_register_onstants():
     assert as3935._0X00 == 0x00
     assert as3935._0X01 == 0x01
@@ -70,9 +69,7 @@ def test_register_onstants():
     assert as3935._0X3F == 0x3F
     assert as3935._0X40 == 0x40
     assert as3935._0X70 == 0x70
-    assert as3935._0X78 == 0x78
     assert as3935._0X80 == 0x80
-    assert as3935._0X96 == 0x96
     assert as3935._0XC0 == 0xC0
     assert as3935._0XE0 == 0xE0
     assert as3935._0XFF == 0xFF
@@ -137,15 +134,36 @@ def test_init_method_called_with_correct_args(mocker):
         as3935.AS3935, "__init__", autospec=True, return_value=None
     )
     test_as3935 = as3935.AS3935(bus="bus", interrupt_pin="pin")
-    mock_init.assert_called_once_with(
-        test_as3935, bus="bus", interrupt_pin="pin")
+    mock_init.assert_called_once_with(test_as3935, bus="bus", interrupt_pin="pin")
 
 
-@pytest.mark.parametrize("bus, int_pin, int_pin_out", [("bus1", "int_pin1", "int_pin_out1"), ("bus2", "int_pin2", "int_pin_out2")])
+@pytest.mark.parametrize(
+    "bus, int_pin, int_pin_out",
+    [("bus1", "int_pin1", "int_pin_out1"), ("bus2", "int_pin2", "int_pin_out2")],
+)
 def test_init_calls(mocker, bus, int_pin, int_pin_out):
+    mock_int_pin = mocker.Mock(name=int_pin)
+    mock_digitalinout = mocker.patch.object(
+        as3935.digitalio, "DigitalInOut", return_value=mock_int_pin
+    )
+    mock_startup_checks = mocker.patch.object(
+        as3935.AS3935, "_as3935_startup_checks", autospec=True
+    )
+    test_as3935 = as3935.AS3935(bus=bus, interrupt_pin=mock_int_pin)
+    mock_digitalinout.assert_called_once_with(mock_int_pin)
+    # Confirm DigitalInOut object from interrupt_pin arg is assigned to self.interrupt_pin
+    assert test_as3935._interrupt_pin == mock_int_pin
+    # Check that DigitalInOUt called with interrupt_pin from args
+    mock_digitalinout.assert_called_once_with(mock_int_pin)
+    # Check that interrupt pin direction is correctly set
+    # No test yet
+    # Check that startup checks are run
+    mock_startup_checks.assert_called_once()
 
 
-def test_read_byte_in_calls_spi_dev_write_with_correct_arguments(mocker,test_register):
+def test_read_byte_in_calls_spi_dev_write_with_correct_arguments(
+    test_device, test_register
+):
     test_device._read_byte_in(test_register)
     # Complex mocking to work with "with x as y" constructs
     name, _, kwargs = test_device._device.__enter__.return_value.mock_calls[0]
@@ -153,7 +171,9 @@ def test_read_byte_in_calls_spi_dev_write_with_correct_arguments(mocker,test_reg
     assert kwargs == {"end": 1}
 
 
-def test_read_byte_in_calls_spi_dev_readinto_with_correct_kwargs(test_device, test_register):
+def test_read_byte_in_calls_spi_dev_readinto_with_correct_kwargs(
+    test_device, test_register
+):
     test_device._read_byte_in(test_register)
     # Complex mocking to work with "with x as y" constructs
     name, _, kwargs = test_device._device.__enter__.return_value.mock_calls[1]
@@ -662,7 +682,8 @@ def test_interrupt_set(
     assert test_device.interrupt_set is return_value
 
 
-def test_as3935_startup_checks(mocker, test_device):
+def test_as3935_startup_checks(mocker):
+    mock_init = mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
     mock_reset = mocker.patch.object(
         as3935.AS3935, "reset", autospec=True, return_value=None
     )
@@ -670,6 +691,7 @@ def test_as3935_startup_checks(mocker, test_device):
         as3935.AS3935, "_check_clock_calibration", autospec=True, return_value=None
     )
     # Confirm reset and check clock calibration functions were called
+    test_device = as3935.AS3935(bus="bus", interrupt_pin="pin")
     test_device._as3935_startup_checks()
     mock_reset.assert_called_once()
     mock_check_clock_calibration.assert_called_once()
