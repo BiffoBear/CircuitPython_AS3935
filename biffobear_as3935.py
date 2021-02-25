@@ -184,7 +184,7 @@ class AS3935:
         self._bus = bus
         self._interrupt_pin = digitalio.DigitalInOut(interrupt_pin)
         self._interrupt_pin.direction = digitalio.Direction.INPUT
-        self._as3935_startup_checks()
+        self._startup_checks()
 
     def _read_byte_in(self, register):
         """Read one byte from the selected address."""
@@ -508,7 +508,7 @@ class AS3935:
             return None
         return self._interrupt_pin.value
 
-    def _as3935_startup_checks(self):
+    def _startup_checks(self):
         """Check communication with the AS3935 and confirm clocks are calibrated."""
         # With no sensor connected, reading the SPI Device returns 0x00. After a reset
         # the clocks are calibrated automatically. Therefore, resetting the sensor then

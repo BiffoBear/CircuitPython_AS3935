@@ -29,7 +29,7 @@ def set_reg(mocker):
 def test_device(mocker):
     # Returns an instance of the AS3935 driver with SDIDevice patched.
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
-    mocker.patch.object(as3935.AS3935, "_as3935_startup_checks", return_value=None)
+    mocker.patch.object(as3935.AS3935, "_startup_checks", return_value=None)
     return as3935.AS3935(bus=mocker.MagicMock(name="bus"), interrupt_pin="int_pin")
 
 
@@ -145,7 +145,7 @@ def test_init_calls(mocker, bus, int_pin, int_pin_out):
         as3935.digitalio, "DigitalInOut", return_value=mock_int_pin
     )
     mock_startup_checks = mocker.patch.object(
-        as3935.AS3935, "_as3935_startup_checks", autospec=True
+        as3935.AS3935, "_startup_checks", autospec=True
     )
     test_as3935 = as3935.AS3935(bus=bus, interrupt_pin=mock_int_pin)
     mock_digitalinout.assert_called_once_with(mock_int_pin)
@@ -680,7 +680,7 @@ def test_interrupt_set(
     assert test_device.interrupt_set is return_value
 
 
-def test_as3935_startup_checks(mocker):
+def test_startup_checks(mocker):
     mock_init = mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
     mock_reset = mocker.patch.object(
         as3935.AS3935, "reset", autospec=True, return_value=None
@@ -690,6 +690,6 @@ def test_as3935_startup_checks(mocker):
     )
     # Confirm reset and check clock calibration functions were called
     test_device = as3935.AS3935(bus="bus", interrupt_pin="pin")
-    test_device._as3935_startup_checks()
+    test_device._startup_checks()
     mock_reset.assert_called_once()
     mock_check_clock_calibration.assert_called_once()
