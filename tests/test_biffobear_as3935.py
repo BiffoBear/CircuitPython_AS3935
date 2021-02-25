@@ -202,9 +202,7 @@ def test_write_byte_out_calls_spi_dev_write_with_correct_kwargs(
 ):
     test_device._write_byte_out(test_register, 0x22)
     for call_index in range(2):
-        name, _, kwargs = test_device._bus.__enter__.return_value.mock_calls[
-            call_index
-        ]
+        name, _, kwargs = test_device._bus.__enter__.return_value.mock_calls[call_index]
         assert name == "write"
         assert kwargs == {"end": 1}
 
