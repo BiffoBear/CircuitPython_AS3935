@@ -129,7 +129,7 @@ class AS3935:
     implemented.
     """
 
-    # Global bufferS for SPI commands and address
+    # Global bufferS for bus commands and address
     _ADDR_BUFFER = bytearray(1)
     _DATA_BUFFER = bytearray(1)
 
@@ -360,8 +360,8 @@ class AS3935:
 
     @property
     def power_down(self):
-        """bool: Power status. If True, the unit is powered off although the SPI bus remains
-        active."""
+        """bool: Power status. If True, the unit is powered off although the SPI and I2C buses
+        remain active."""
         return bool(self._get_register(self._PWD))
 
     @power_down.setter
