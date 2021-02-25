@@ -79,8 +79,27 @@ _LIGHTNING_COUNT = (_0X01, _0X05, _0X09, _0X10)
 _FREQ_DIVISOR = (_0X10, _0X20, _0X40, _0X80)
 
 
-def as3935_spi(spi, cs, baudrate=None, *, interrupt_pin):
-    pass
+def as3935_spi(spi, cs, baudrate=1_000_000, *, interrupt_pin):
+    """Creates an instance of the Franklin AS3935 driver with a SPI connection.
+    
+    :param busio.SPI spi: The SPI bus connected to the chip.  Ensure SCK, MOSI, and MISO are
+        connected.
+    :param ~board.Pin cs: The pin connected to the chip's CS/chip select line.
+    :param ~board.Pin interrupt_pin: The pin connected to the chip's interrupt line. Note
+        that CircuitPython currently does not support interrupts, but the line is held high
+        for at least one second per event, so it may be polled. Some single board computers,
+        e.g. the Raspberry Pi, do support interrupts.
+    :param int baudrate: Defaults to 2,000,000 which is the maximum supported by the chip. If
+        another baudrate is selected, avoid +/- 500,000 as this will interfere with the chip's
+        antenna.
+
+    """
+    return AS3935(
+        bus=spi_dev.SPIDevice(
+            spi, digitalio.DigitalInOut(cs), baudrate=baudrate, polarity=1, phase=0
+        ),
+        interrupt_pin=interrupt_pin,
+    )
 
 
 def _reg_value_from_choices(value, choices):
