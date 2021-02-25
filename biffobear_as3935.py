@@ -99,6 +99,7 @@ def as3935_spi(spi, cs_pin, baudrate=1_000_000, *, interrupt_pin):
         interrupt_pin=interrupt_pin,
     )
 
+
 def as3935_i2c(i2c, address=0x03, *, interrupt_pin):
     """Creates an instance of the Franklin AS3935 driver with an I2C bus connection.
 
@@ -111,6 +112,7 @@ def as3935_i2c(i2c, address=0x03, *, interrupt_pin):
         e.g. the Raspberry Pi, do support interrupts.
     """
     return AS3935(bus=i2c_dev.I2CDevice(i2c, address), interrupt_pin=interrupt_pin)
+
 
 def _reg_value_from_choices(value, choices):
     """Return the index of a value from an iterable."""
