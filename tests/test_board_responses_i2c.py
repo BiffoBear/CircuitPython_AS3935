@@ -48,16 +48,15 @@ device = None
 
 def setup_module():
     # Returns an instance of the AS3935 driver
+    print("Setting up I2C connection...")
     global device
-    spi = board.SPI()
+    i2c = board.I2C()
     try:
-        cs = board.D24
         interrupt = board.D25
     except AttributeError:
-        cs = board.D5
         interrupt = board.D7
 
-    device = as3935.AS3935(spi, cs, interrupt_pin=interrupt, baudrate=1_000_000)
+    device = as3935.as3935_12c(i2c, interrupt_pin=interrupt)
     device.reset()
 
 
