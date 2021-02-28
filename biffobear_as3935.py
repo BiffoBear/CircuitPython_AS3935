@@ -144,8 +144,7 @@ class AS3935:
     """
 
     # Global bufferS for bus commands and address
-    _ADDR_BUFFER = bytearray(1)
-    _DATA_BUFFER = bytearray(1)
+    _BUFFER = bytearray(2)
 
     # Constants to make register values human readable in the code
     DATA_PURGE = _0X00  # 0x00 - Distance recalculated after purging old data
@@ -202,21 +201,20 @@ class AS3935:
 
     def _read_byte_in(self, register):
         """Read one byte from the selected address."""
-        self._ADDR_BUFFER[0] = (
+        self._BUFFER[0] = (
             register.addr & _0X3F
         ) | _0X40  # Set bits 15 and 14 to 01 - read
         with self._bus as bus:
-            bus.write(self._ADDR_BUFFER, end=1)
-            bus.readinto(self._DATA_BUFFER, end=1)
-            return self._DATA_BUFFER[0]
+            bus.write(self._BUFFER, end=1)
+            bus.readinto(self._BUFFER, end=1)
+            return self._BUFFER[0]
 
     def _write_byte_out(self, register, data):
         """Write one byte to the selected register."""
-        self._ADDR_BUFFER[0] = register.addr & _0X3F  # Set bits 15 and 14 to 00 - write
-        self._DATA_BUFFER[0] = data
+        self._BUFFER[0] = register.addr & _0X3F  # Set bits 15 and 14 to 00 - write
+        self._BUFFER[1] = data
         with self._bus as bus:
-            bus.write(self._ADDR_BUFFER, end=1)
-            bus.write(self._DATA_BUFFER, end=1)
+            bus.write(self._BUFFER, end=2)
 
     def _get_register(self, register):
         """Read the current register byte, mask and shift the value."""

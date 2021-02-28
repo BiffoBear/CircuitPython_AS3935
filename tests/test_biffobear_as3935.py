@@ -89,10 +89,8 @@ def test_other_constants():
 
 
 def test_address_and_data_command_buffers():
-    assert isinstance(as3935.AS3935._ADDR_BUFFER, bytearray)
-    assert len(as3935.AS3935._ADDR_BUFFER) == 1
-    assert isinstance(as3935.AS3935._DATA_BUFFER, bytearray)
-    assert len(as3935.AS3935._DATA_BUFFER) == 1
+    assert isinstance(as3935.AS3935._BUFFER, bytearray)
+    assert len(as3935.AS3935._BUFFER) == 2
 
 
 @pytest.mark.parametrize(
@@ -185,9 +183,9 @@ def test_read_byte_in_sets_correct_bits_for_read_address(test_device, address, b
     test_device._read_byte_in(test_register)
     # Complex mocking to work with "with x as y" constructs
     name, args, _ = test_device._bus.__enter__.return_value.mock_calls[0]
-    assert test_device._ADDR_BUFFER[0] == buffer
+    assert test_device._BUFFER[0] == buffer
     assert name == "write"
-    assert args == (test_device._ADDR_BUFFER,)
+    assert args == (test_device._BUFFER,)
 
 
 @pytest.mark.skip(reason="I don't know how to return a mock value for this.")
@@ -201,10 +199,9 @@ def test_write_byte_out_calls_spi_dev_write_with_correct_kwargs(
     test_device, test_register
 ):
     test_device._write_byte_out(test_register, 0x22)
-    for call_index in range(2):
-        name, _, kwargs = test_device._bus.__enter__.return_value.mock_calls[call_index]
-        assert name == "write"
-        assert kwargs == {"end": 1}
+    name, _, kwargs = test_device._bus.__enter__.return_value.mock_calls[0]
+    assert name == "write"
+    assert kwargs == {"end": 2}
 
 
 @pytest.mark.parametrize("address, buffer", [(0x0F, 0x0F), (0x3F, 0x3F), (0xF0, 0x30)])
@@ -213,10 +210,10 @@ def test_write_byte_out_sets_correct_bits_for_write_address(
 ):
     test_register = as3935._Register(address, 0x04, 0b0111_0000)
     test_device._write_byte_out(test_register, 0b0000_0101)
-    assert test_device._ADDR_BUFFER[0] == buffer
+    assert test_device._BUFFER[0] == buffer
     name, args, _ = test_device._bus.__enter__.return_value.mock_calls[0]
     assert name == "write"
-    assert args == (test_device._ADDR_BUFFER,)
+    assert args == (test_device._BUFFER,)
 
 
 @pytest.mark.parametrize("data, buffer", [(0x00, 0x00), (0x07, 0x07), (0xFF, 0xFF)])
@@ -224,10 +221,12 @@ def test_write_byte_out_sends_data_buffer_for_write_address(
     test_device, test_register, data, buffer
 ):
     test_device._write_byte_out(test_register, data)
-    assert test_device._DATA_BUFFER[0] == buffer
-    name, args, _ = test_device._bus.__enter__.return_value.mock_calls[1]
+    assert test_device._BUFFER[1] == buffer
+    name, args, _ = test_device._bus.__enter__.return_value.mock_calls[0]
     assert name == "write"
-    assert args == (test_device._DATA_BUFFER,)
+    print(args)
+    print(test_device._BUFFER)
+    assert args == (test_device._BUFFER,)
 
 
 @pytest.mark.parametrize(
