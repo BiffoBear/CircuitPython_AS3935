@@ -217,15 +217,11 @@ def test_write_byte_out_sets_correct_bits_for_write_address(
 
 
 @pytest.mark.parametrize("data, buffer", [(0x00, 0x00), (0x07, 0x07), (0xFF, 0xFF)])
-def test_write_byte_out_sends_data_buffer_for_write_address(
-    test_device, test_register, data, buffer
-):
+def test_write_byte_out_sends__correct_data(test_device, test_register, data, buffer):
     test_device._write_byte_out(test_register, data)
     assert test_device._BUFFER[1] == buffer
     name, args, _ = test_device._bus.__enter__.return_value.mock_calls[0]
     assert name == "write"
-    print(args)
-    print(test_device._BUFFER)
     assert args == (test_device._BUFFER,)
 
 
