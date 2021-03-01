@@ -17,7 +17,7 @@ from CircuitPython_AS3935 import biffobear_as3935 as as3935
     "i2c, i2cbus, address, int_pin, as3935_inst",
     [("i2c1", "i2cbus1", "address1", "int_pin1", "as3935_inst")],
 )
-def test_as3935_AS3935_I2C_instantiated_with_correct_args_from_as3935_i2c(
+def test_as3935_AS3935_I2C_instantiated_with_correct_args(
     mocker, i2c, i2cbus, address, int_pin, as3935_inst
 ):
     assert issubclass(as3935.AS3935_I2C, as3935.AS3935)
@@ -33,8 +33,8 @@ def test_as3935_AS3935_I2C_instantiated_with_correct_args_from_as3935_i2c(
     result = as3935.AS3935_I2C(i2c, interrupt_pin=int_pin)
     default_i2c_address = 0x03
     mock_i2cdevice.assert_called_once_with(i2c, 0x03)
-    assert result.bus == i2cbus
+    assert result._bus == i2cbus
     # Check that AS3935 instantiated with correct args
-    # mock_as3935.assert_called_once_with(bus=i2cbus, interrupt_pin=int_pin)
+    mock_as3935.assert_called_once_with(interrupt_pin=int_pin)
     # Confirm an instance of AS3935 is returned
     # assert result == as3935_inst

@@ -194,8 +194,7 @@ class AS3935:
         _0X3D, _0X00, _0XFF
     )  # Set this to 0x96 to calibrate the clocks
 
-    def __init__(self, *, bus, interrupt_pin):
-        self._bus = bus
+    def __init__(self, *, interrupt_pin):
         self._interrupt_pin = digitalio.DigitalInOut(interrupt_pin)
         self._interrupt_pin.direction = digitalio.Direction.INPUT
         self._startup_checks()
@@ -534,4 +533,5 @@ class AS3935:
 class AS3935_I2C(AS3935):
 
     def __init__(self, i2c, address=0x03, *, interrupt_pin):
-        self.bus = i2c_dev.I2CDevice(i2c, address)
+        self._bus = i2c_dev.I2CDevice(i2c, address)
+        super().__init__(interrupt_pin=interrupt_pin)
