@@ -10,6 +10,7 @@
 import pytest
 from CircuitPython_AS3935 import biffobear_as3935 as as3935
 
+pytestmark = pytest.mark.skip
 
 @pytest.mark.parametrize(
     "spi, cs_pin_in, cs_pin_out, baud, spibus, int_pin, as3935_inst",

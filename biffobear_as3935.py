@@ -529,3 +529,9 @@ class AS3935:
         # the calibration times out, we know that there are no comms with the sensor
         self.reset()
         self._check_clock_calibration()
+
+
+class AS3935_I2C(AS3935):
+
+    def __init__(self, i2c, address=0x03, *, interrupt_pin):
+        self.bus = i2c_dev.I2CDevice(i2c, address)
