@@ -535,3 +535,8 @@ class AS3935_I2C(AS3935):
     def __init__(self, i2c, address=0x03, *, interrupt_pin):
         self._bus = i2c_dev.I2CDevice(i2c, address)
         super().__init__(interrupt_pin=interrupt_pin)
+
+    def _write_byte_out(self, register, data):
+        """Write one byte to the selected register."""
+        _BUFFER[0] = data
+        self._bus.writeto(register.addr, _BUFFER, end=1)
