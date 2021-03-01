@@ -82,7 +82,6 @@ _FREQ_DIVISOR = (_0X10, _0X20, _0X40, _0X80)
 _BUFFER = bytearray(2)
 
 
-
 def as3935_spi(spi, cs_pin, baudrate=1_000_000, *, interrupt_pin):
     """Creates an instance of the Franklin AS3935 driver with a SPI bus connection.
 
@@ -201,9 +200,7 @@ class AS3935:
 
     def _read_byte_in(self, register):
         """Read one byte from the selected address."""
-        _BUFFER[0] = (
-            register.addr & _0X3F
-        ) | _0X40  # Set bits 15 and 14 to 01 - read
+        _BUFFER[0] = (register.addr & _0X3F) | _0X40  # Set bits 15 and 14 to 01 - read
         with self._bus as bus:
             bus.write(_BUFFER, end=1)
             bus.readinto(_BUFFER, end=1)
@@ -531,7 +528,6 @@ class AS3935:
 
 
 class AS3935_I2C(AS3935):
-
     def __init__(self, i2c, address=0x03, *, interrupt_pin):
         self._bus = i2c_dev.I2CDevice(i2c, address)
         super().__init__(interrupt_pin=interrupt_pin)
@@ -540,3 +536,8 @@ class AS3935_I2C(AS3935):
         """Write one byte to the selected register."""
         _BUFFER[0] = data
         self._bus.writeto(register.addr, _BUFFER, end=1)
+
+    def _read_byte_in(self, register):
+        """Read one byte from the selected address."""
+        self._bus.write_then_readinto(register.addr, _BUFFER, _BUFFER, out_end=1, in_end=1)
+        return _BUFFER[0]
