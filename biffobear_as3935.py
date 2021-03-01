@@ -75,8 +75,12 @@ _0XC0 = const(0xC0)
 _0XE0 = const(0xE0)
 _0XFF = const(0xFF)
 
+# Valid inputs for strike count threshold and frequency divisor registers
 _LIGHTNING_COUNT = (_0X01, _0X05, _0X09, _0X10)
 _FREQ_DIVISOR = (_0X10, _0X20, _0X40, _0X80)
+# Global buffer for bus data and address
+_BUFFER = bytearray(2)
+
 
 
 def as3935_spi(spi, cs_pin, baudrate=1_000_000, *, interrupt_pin):
@@ -143,9 +147,6 @@ class AS3935:
     implemented.
     """
 
-    # Global bufferS for bus commands and address
-    _BUFFER = bytearray(2)
-
     # Constants to make register values human readable in the code
     DATA_PURGE = _0X00  # 0x00 - Distance recalculated after purging old data
     NOISE = _0X01  # 0x01 - INT_NH Noise level too high. Stays high while noise remains
@@ -201,20 +202,20 @@ class AS3935:
 
     def _read_byte_in(self, register):
         """Read one byte from the selected address."""
-        self._BUFFER[0] = (
+        _BUFFER[0] = (
             register.addr & _0X3F
         ) | _0X40  # Set bits 15 and 14 to 01 - read
         with self._bus as bus:
-            bus.write(self._BUFFER, end=1)
-            bus.readinto(self._BUFFER, end=1)
-            return self._BUFFER[0]
+            bus.write(_BUFFER, end=1)
+            bus.readinto(_BUFFER, end=1)
+            return _BUFFER[0]
 
     def _write_byte_out(self, register, data):
         """Write one byte to the selected register."""
-        self._BUFFER[0] = register.addr & _0X3F  # Set bits 15 and 14 to 00 - write
-        self._BUFFER[1] = data
+        _BUFFER[0] = register.addr & _0X3F  # Set bits 15 and 14 to 00 - write
+        _BUFFER[1] = data
         with self._bus as bus:
-            bus.write(self._BUFFER, end=2)
+            bus.write(_BUFFER, end=2)
 
     def _get_register(self, register):
         """Read the current register byte, mask and shift the value."""

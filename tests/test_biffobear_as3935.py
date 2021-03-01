@@ -89,8 +89,8 @@ def test_other_constants():
 
 
 def test_address_and_data_command_buffers():
-    assert isinstance(as3935.AS3935._BUFFER, bytearray)
-    assert len(as3935.AS3935._BUFFER) == 2
+    assert isinstance(as3935._BUFFER, bytearray)
+    assert len(as3935._BUFFER) == 2
 
 
 @pytest.mark.parametrize(
@@ -183,9 +183,9 @@ def test_read_byte_in_sets_correct_bits_for_read_address(test_device, address, b
     test_device._read_byte_in(test_register)
     # Complex mocking to work with "with x as y" constructs
     name, args, _ = test_device._bus.__enter__.return_value.mock_calls[0]
-    assert test_device._BUFFER[0] == buffer
+    assert as3935._BUFFER[0] == buffer
     assert name == "write"
-    assert args == (test_device._BUFFER,)
+    assert args == (as3935._BUFFER,)
 
 
 @pytest.mark.skip(reason="I don't know how to return a mock value for this.")
@@ -210,19 +210,19 @@ def test_write_byte_out_sets_correct_bits_for_write_address(
 ):
     test_register = as3935._Register(address, 0x04, 0b0111_0000)
     test_device._write_byte_out(test_register, 0b0000_0101)
-    assert test_device._BUFFER[0] == buffer
+    assert as3935._BUFFER[0] == buffer
     name, args, _ = test_device._bus.__enter__.return_value.mock_calls[0]
     assert name == "write"
-    assert args == (test_device._BUFFER,)
+    assert args == (as3935._BUFFER,)
 
 
 @pytest.mark.parametrize("data, buffer", [(0x00, 0x00), (0x07, 0x07), (0xFF, 0xFF)])
 def test_write_byte_out_sends__correct_data(test_device, test_register, data, buffer):
     test_device._write_byte_out(test_register, data)
-    assert test_device._BUFFER[1] == buffer
+    assert as3935._BUFFER[1] == buffer
     name, args, _ = test_device._bus.__enter__.return_value.mock_calls[0]
     assert name == "write"
-    assert args == (test_device._BUFFER,)
+    assert args == (as3935._BUFFER,)
 
 
 @pytest.mark.parametrize(
