@@ -22,7 +22,7 @@ def test_as3935_AS3935_I2C_instantiated_with_correct_args(
     mock_i2cdevice = mocker.patch.object(
         as3935.i2c_dev, "I2CDevice", return_value=i2cbus
     )
-    mock_as3935_init = mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
+    mock_as3935_init = mocker.patch.object(as3935.AS3935, "__init__", autospec=True, return_value=None)
     as3935.AS3935_I2C(i2c, address, interrupt_pin=int_pin)
     # Confirm that I2CDevice called with correct values
     mock_i2cdevice.assert_called_once_with(i2c, address)
@@ -34,7 +34,7 @@ def test_as3935_AS3935_I2C_instantiated_with_correct_args(
     # Confirm that the I2CDevice is assighed to self._bus
     assert test_as3935_i2c._bus == i2cbus
     # Check that AS3935 instantiated with correct args
-    mock_as3935_init.assert_called_once_with(interrupt_pin=int_pin)
+    mock_as3935_init.assert_called_once_with(test_as3935_i2c, interrupt_pin=int_pin)
 
 
 @pytest.mark.parametrize("addr, data_byte", [(0x04, 0xFF), (0x0E, 0x44)])
