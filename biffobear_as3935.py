@@ -103,20 +103,6 @@ def as3935_spi(spi, cs_pin, baudrate=1_000_000, *, interrupt_pin):
     )
 
 
-def as3935_i2c(i2c, address=0x03, *, interrupt_pin):
-    """Creates an instance of the Franklin AS3935 driver with an I2C bus connection.
-
-    :param busio.I2C spi: The I2C bus connected to the chip.  Ensure SDA, and SCL are
-        connected.
-    :param int address: The I2C address of the chip. Default is 0x03.
-    :param ~board.Pin interrupt_pin: The pin connected to the chip's interrupt line. Note
-        that CircuitPython currently does not support interrupts, but the line is held high
-        for at least one second per event, so it may be polled. Some single board computers,
-        e.g. the Raspberry Pi, do support interrupts.
-    """
-    return AS3935(bus=i2c_dev.I2CDevice(i2c, address), interrupt_pin=interrupt_pin)
-
-
 def _reg_value_from_choices(value, choices):
     """Return the index of a value from an iterable."""
     try:
@@ -528,17 +514,27 @@ class AS3935:
 
 
 class AS3935_I2C(AS3935):
+    """Instatiates the Franklin AS3935 driver with an I2C bus connection.
 
+    :param busio.I2C i2c: The I2C bus connected to the chip.
+    :param int address: The I2C address of the chip. Default is 0x03.
+    :param ~board.Pin interrupt_pin: The pin connected to the chip's interrupt line. Note
+        that CircuitPython currently does not support interrupts, but the line is held high
+        for at least one second per event, so it may be polled. Some single board computers,
+        e.g. the Raspberry Pi, do support interrupts.
+    """
     def __init__(self, i2c, address=0x03, *, interrupt_pin):
         self._bus = i2c_dev.I2CDevice(i2c, address)
         super().__init__(interrupt_pin=interrupt_pin)
 
     def _write_byte_out(self, register, data):
         """Write one byte to the selected register."""
+        # Overrides AS3935._write_byte_out to handle writing data to the I2C bus
         _BUFFER[0] = data
         self._bus.writeto(register.addr, _BUFFER, end=1)
 
     def _read_byte_in(self, register):
         """Read one byte from the selected register."""
+        # Overrides AS3935._read_byte_in to handle writing data to the I2C bus
         self._bus.write_then_readinto(register.addr, _BUFFER, _BUFFER, out_end=1, in_end=1)
         return _BUFFER[0]
