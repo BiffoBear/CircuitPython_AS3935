@@ -523,6 +523,7 @@ class AS3935_I2C(AS3935):
         for at least one second per event, so it may be polled. Some single board computers,
         e.g. the Raspberry Pi, do support interrupts.
     """
+
     def __init__(self, i2c, address=0x03, *, interrupt_pin):
         self._bus = i2c_dev.I2CDevice(i2c, address)
         super().__init__(interrupt_pin=interrupt_pin)
@@ -536,5 +537,7 @@ class AS3935_I2C(AS3935):
     def _read_byte_in(self, register):
         """Read one byte from the selected register."""
         # Overrides AS3935._read_byte_in to handle writing data to the I2C bus
-        self._bus.write_then_readinto(register.addr, _BUFFER, _BUFFER, out_end=1, in_end=1)
+        self._bus.write_then_readinto(
+            register.addr, _BUFFER, _BUFFER, out_end=1, in_end=1
+        )
         return _BUFFER[0]
