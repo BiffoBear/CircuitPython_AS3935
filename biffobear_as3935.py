@@ -170,18 +170,11 @@ class AS3935:
 
     def _read_byte_in(self, register):
         """Read one byte from the selected address."""
-        _BUFFER[0] = (register.addr & _0X3F) | _0X40  # Set bits 15 and 14 to 01 - read
-        with self._bus as bus:
-            bus.write(_BUFFER, end=1)
-            bus.readinto(_BUFFER, end=1)
-            return _BUFFER[0]
+        # Stub method for testing. Overridden when subclass instatiates class.
 
     def _write_byte_out(self, register, data):
         """Write one byte to the selected register."""
-        _BUFFER[0] = register.addr & _0X3F  # Set bits 15 and 14 to 00 - write
-        _BUFFER[1] = data
-        with self._bus as bus:
-            bus.write(_BUFFER, end=2)
+        # Stub method for testing. Overridden when subclass instatiates class.
 
     def _get_register(self, register):
         """Read the current register byte, mask and shift the value."""
@@ -189,10 +182,11 @@ class AS3935:
 
     def _set_register(self, register, value):
         """Read the byte containing the register, mask in the new value and write out the byte."""
-        byte = self._read_byte_in(register)
-        byte &= ~register.mask
-        byte |= (value << register.offset) & _0XFF
-        self._write_byte_out(register, byte)
+        register_byte = self._read_byte_in(register)
+        # apset
+        register_byte &= ~register.mask
+        register_byte |= (value << register.offset) & _0XFF
+        self._write_byte_out(register, register_byte)
 
     @property
     def indoor(self):

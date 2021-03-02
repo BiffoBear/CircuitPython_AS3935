@@ -8,13 +8,12 @@
 # pylint: skip-file
 
 import time
+import inspect
 from collections import namedtuple
 from random import random
 from unittest.mock import PropertyMock
 import pytest
 from CircuitPython_AS3935 import biffobear_as3935 as as3935
-
-pytestmark = pytest.mark.skip
 
 
 @pytest.fixture
@@ -131,15 +130,15 @@ def test_init_method_called_with_correct_args(mocker):
     mock_init = mocker.patch.object(
         as3935.AS3935, "__init__", autospec=True, return_value=None
     )
-    test_as3935 = as3935.AS3935(bus="bus", interrupt_pin="pin")
+    test_as3935 = as3935.AS3935(interrupt_pin="pin")
     mock_init.assert_called_once_with(test_as3935, interrupt_pin="pin")
 
 
 @pytest.mark.parametrize(
-    "bus, int_pin, int_pin_out",
-    [("bus1", "int_pin1", "int_pin_out1"), ("bus2", "int_pin2", "int_pin_out2")],
+    "int_pin, int_pin_out",
+    [("int_pin1", "int_pin_out1"), ("int_pin2", "int_pin_out2")],
 )
-def test_init_calls(mocker, bus, int_pin, int_pin_out):
+def test_init_calls(mocker, int_pin, int_pin_out):
     mock_int_pin = mocker.Mock(name=int_pin)
     mock_digitalinout = mocker.patch.object(
         as3935.digitalio, "DigitalInOut", return_value=mock_int_pin
@@ -147,7 +146,7 @@ def test_init_calls(mocker, bus, int_pin, int_pin_out):
     mock_startup_checks = mocker.patch.object(
         as3935.AS3935, "_startup_checks", autospec=True
     )
-    test_as3935 = as3935.AS3935(bus=bus, interrupt_pin=mock_int_pin)
+    test_as3935 = as3935.AS3935(interrupt_pin=mock_int_pin)
     mock_digitalinout.assert_called_once_with(mock_int_pin)
     # Confirm DigitalInOut object from interrupt_pin arg is assigned to self.interrupt_pin
     assert test_as3935._interrupt_pin == mock_int_pin
@@ -159,72 +158,22 @@ def test_init_calls(mocker, bus, int_pin, int_pin_out):
     mock_startup_checks.assert_called_once()
 
 
-def test_read_byte_in_calls_spi_dev_write_with_correct_arguments(
-    test_device, test_register
-):
-    test_device._read_byte_in(test_register)
-    # Complex mocking to work with "with x as y" constructs
-    name, _, kwargs = test_device._bus.__enter__.return_value.mock_calls[0]
-    assert name == "write"
-    assert kwargs == {"end": 1}
+def test_read_byte_in_has_same_signature_as_subclasses():
+    assert inspect.signature(as3935.AS3935._read_byte_in) == inspect.signature(
+        as3935.AS3935_I2C._read_byte_in
+    )
+    assert inspect.signature(as3935.AS3935._read_byte_in) == inspect.signature(
+        as3935.AS3935_SPI._read_byte_in
+    )
 
 
-def test_read_byte_in_calls_spi_dev_readinto_with_correct_kwargs(
-    test_device, test_register
-):
-    test_device._read_byte_in(test_register)
-    # Complex mocking to work with "with x as y" constructs
-    name, _, kwargs = test_device._bus.__enter__.return_value.mock_calls[1]
-    assert name == "readinto"
-    assert kwargs == {"end": 1}
-
-
-@pytest.mark.parametrize("address, buffer", [(0x0F, 0x4F), (0x3F, 0x7F), (0xF0, 0x70)])
-def test_read_byte_in_sets_correct_bits_for_read_address(test_device, address, buffer):
-    test_register = as3935._Register(address, 0x04, 0b0111_0000)
-    test_device._read_byte_in(test_register)
-    # Complex mocking to work with "with x as y" constructs
-    name, args, _ = test_device._bus.__enter__.return_value.mock_calls[0]
-    assert as3935._BUFFER[0] == buffer
-    assert name == "write"
-    assert args == (as3935._BUFFER,)
-
-
-@pytest.mark.skip(reason="I don't know how to return a mock value for this.")
-def test_read_byte_in_populates_data_buffer():
-    # It would be nice to have a test for this. Meanwhile any problems will
-    # be seen when testing with an attached sensor.
-    pass
-
-
-def test_write_byte_out_calls_spi_dev_write_with_correct_kwargs(
-    test_device, test_register
-):
-    test_device._write_byte_out(test_register, 0x22)
-    name, _, kwargs = test_device._bus.__enter__.return_value.mock_calls[0]
-    assert name == "write"
-    assert kwargs == {"end": 2}
-
-
-@pytest.mark.parametrize("address, buffer", [(0x0F, 0x0F), (0x3F, 0x3F), (0xF0, 0x30)])
-def test_write_byte_out_sets_correct_bits_for_write_address(
-    test_device, address, buffer
-):
-    test_register = as3935._Register(address, 0x04, 0b0111_0000)
-    test_device._write_byte_out(test_register, 0b0000_0101)
-    assert as3935._BUFFER[0] == buffer
-    name, args, _ = test_device._bus.__enter__.return_value.mock_calls[0]
-    assert name == "write"
-    assert args == (as3935._BUFFER,)
-
-
-@pytest.mark.parametrize("data, buffer", [(0x00, 0x00), (0x07, 0x07), (0xFF, 0xFF)])
-def test_write_byte_out_sends__correct_data(test_device, test_register, data, buffer):
-    test_device._write_byte_out(test_register, data)
-    assert as3935._BUFFER[1] == buffer
-    name, args, _ = test_device._bus.__enter__.return_value.mock_calls[0]
-    assert name == "write"
-    assert args == (as3935._BUFFER,)
+def test_write_byte_out_has_same_signature_as_subclasses():
+    assert inspect.signature(as3935.AS3935._write_byte_out) == inspect.signature(
+        as3935.AS3935_I2C._write_byte_out
+    )
+    assert inspect.signature(as3935.AS3935._write_byte_out) == inspect.signature(
+        as3935.AS3935_SPI._write_byte_out
+    )
 
 
 @pytest.mark.parametrize(
