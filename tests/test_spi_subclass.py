@@ -61,3 +61,38 @@ def test_as3935_instantiated_with_correct_args_from_as3935_spi(
     assert test_as3935._bus == spibus
     # Check that AS3935 instantiated with correct args
     mock_as3935_init.assert_called_once_with(test_as3935, interrupt_pin=int_pin)
+
+
+@pytest.mark.parametrize("addr, data_byte", [(0x04, 0xFF), (0x0E, 0x44)])
+def test_write_byte_out_calls_spi_dev_write_with_correct_kwargs(mocker, addr, data_byte):
+    # Confirm that the correct _write_byte_out is being called
+    assert (
+        as3935.AS3935_SPI._write_byte_out.__qualname__ == "AS3935_SPI._write_byte_out"
+    )
+    mocker.patch.object(as3935.digitalio, "DigitalInOut")
+    mock_as3935_init = mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
+    mock_spidevice = mocker.patch.object(
+        as3935.spi_dev, "SPIDevice", autospec=True, return_value=mocker.MagicMock()
+    )
+    test_register = as3935._Register(addr, 0x55, 0x00)
+    test_as3935_spi = as3935.AS3935_SPI("spi", "cs_pin", interrupt_pin="int_pin")
+    test_as3935_spi._write_byte_out(test_register, data_byte)
+    name, _, kwargs = test_as3935_spi._bus.__enter__.return_value.mock_calls[0]
+    assert name == "write"
+    assert kwargs == {"end": 2}
+
+
+@pytest.mark.parametrize("addr, data, buffer", [(0x0F, 0xff, 0x0f), (0x3F, 0x00, 0x3f), (0xF0, 0x55, 0x30)])
+def test_write_byte_out_sets_correct_bits_for_write_address_and_sends_correect_data(mocker, addr, data, buffer):
+    mocker.patch.object(as3935.digitalio, "DigitalInOut")
+    mock_as3935_init = mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
+    mock_spidevice = mocker.patch.object(
+        as3935.spi_dev, "SPIDevice", autospec=True, return_value=mocker.MagicMock()
+    )
+    test_register = as3935._Register(addr, 0x55, 0x00)
+    test_as3935_spi = as3935.AS3935_SPI("spi", "cs_pin", interrupt_pin="int_pin")
+    test_as3935_spi._write_byte_out(test_register, data)
+    assert as3935._BUFFER[0] == buffer
+    name, args, _ = test_as3935_spi._bus.__enter__.return_value.mock_calls[0]
+    assert name == "write"
+    assert args == (as3935._BUFFER,)

@@ -49,8 +49,6 @@ def test_write_byte_out_calls_i2c_dev_write_with_correct_kwargs(
     mock_i2cdevice = mocker.patch.object(
         as3935.i2c_dev, "I2CDevice", autospec=True, return_value=mocker.MagicMock()
     )
-    # mock_as3935_init = mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
-
     test_register = as3935._Register(addr, 0x55, 0x00)
     test_as3935_i2c = as3935.AS3935_I2C("i2c", interrupt_pin="int_pin")
     test_as3935_i2c._write_byte_out(test_register, data_byte)
@@ -69,9 +67,8 @@ def test_read_byte_in_calls_i2c_dev_write_then_readinto_with_correct_args(
     mock_i2cdevice = mocker.patch.object(
         as3935.i2c_dev, "I2CDevice", autospec=True, return_value=mocker.MagicMock()
     )
-    mock_i2cdevice
     test_register = as3935._Register(addr, 0x55, 0x00)
-    test_as3935_i2c = as3935.AS3935_I2C("A", interrupt_pin="int_pin")
+    test_as3935_i2c = as3935.AS3935_I2C("i2c", interrupt_pin="int_pin")
     as3935._BUFFER[0] = data_byte
     assert test_as3935_i2c._read_byte_in(test_register) == data_byte
     test_as3935_i2c._bus.write_then_readinto.assert_called_once_with(
