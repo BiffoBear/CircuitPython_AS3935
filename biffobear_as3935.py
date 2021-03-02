@@ -130,6 +130,11 @@ class AS3935:
     second after an event. Allows reading strength of the last strike and estimated
     distance to the storm front. Antenna trimming, clock calibration, etc. are also
     implemented.
+
+    :param ~board.Pin interrupt_pin: The pin connected to the chip's interrupt line. Note
+        that CircuitPython currently does not support interrupts, but the line is held high
+        for at least one second per event, so it may be polled. Some single board computers,
+        e.g. the Raspberry Pi, do support interrupts.
     """
 
     # Constants to make register values human readable in the code
@@ -544,9 +549,19 @@ class AS3935_I2C(AS3935):
 
 
 class AS3935_SPI(AS3935):
+    """Creates an instance of the Franklin AS3935 driver with a SPI bus connection.
+
+    :param busio.SPI spi: The SPI bus connected to the chip.  Ensure SCK, MOSI, and MISO are
+        connected.
+    :param ~board.Pin cs: The pin connected to the chip's CS/chip select line.
+    :param int baudrate: SPI bus baudrate. Defaults to 1,000,000 . If another baudrate is
+        selected, avoid +/- 500,000 as this may interfere with the chip's antenna.
+    """
 
     def __init__(self, spi, cs_pin, baudrate=1_000_000, *, interrupt_pin):
-        self._bus = spi_dev.SPIDevice(spi, digitalio.DigitalInOut(cs_pin), baudrate=baudrate, polarity=1, phase=0)
+        self._bus = spi_dev.SPIDevice(
+            spi, digitalio.DigitalInOut(cs_pin), baudrate=baudrate, polarity=1, phase=0
+        )
         super().__init__(interrupt_pin=interrupt_pin)
 
     def _write_byte_out(self, register, data):
