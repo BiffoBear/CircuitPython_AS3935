@@ -544,10 +544,9 @@ class AS3935_I2C(AS3935):
 
 
 class AS3935_SPI(AS3935):
+
     def __init__(self, spi, cs_pin, baudrate=1_000_000, *, interrupt_pin):
-        self._bus = spi_dev.SPIDevice(
-            spi, digitalio.DigitalInOut(cs_pin), baudrate=baudrate, polarity=1, phase=0
-        )
+        self._bus = spi_dev.SPIDevice(spi, digitalio.DigitalInOut(cs_pin), baudrate=baudrate, polarity=1, phase=0)
         super().__init__(interrupt_pin=interrupt_pin)
 
     def _write_byte_out(self, register, data):
@@ -556,3 +555,11 @@ class AS3935_SPI(AS3935):
         _BUFFER[1] = data
         with self._bus as bus:
             bus.write(_BUFFER, end=2)
+
+    def _read_byte_in(self, register):
+        """Read one byte from the selected address."""
+        _BUFFER[0] = (register.addr & _0X3F) | _0X40  # Set bits 15 and 14 to 01 - read
+        with self._bus as bus:
+            bus.write(_BUFFER, end=1)
+            bus.readinto(_BUFFER, end=1)
+            return _BUFFER[0]

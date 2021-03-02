@@ -33,8 +33,7 @@ from CircuitPython_AS3935 import biffobear_as3935 as as3935
     ],
 )
 def test_as3935_instantiated_with_correct_args_from_as3935_spi(
-    mocker, spi, cs_pin_in, cs_pin_out, baud, spibus, int_pin
-):
+    mocker, spi, cs_pin_in, cs_pin_out, baud, spibus, int_pin):
     assert issubclass(as3935.AS3935_SPI, as3935.AS3935)
     mock_cs_pin = mocker.Mock(name=cs_pin_in)
     mock_digitalio = mocker.patch.object(
@@ -43,9 +42,7 @@ def test_as3935_instantiated_with_correct_args_from_as3935_spi(
     mock_spidevice = mocker.patch.object(
         as3935.spi_dev, "SPIDevice", return_value=spibus
     )
-    mock_as3935_init = mocker.patch.object(
-        as3935.AS3935, "__init__", autospec=True, return_value=None
-    )
+    mock_as3935_init = mocker.patch.object(as3935.AS3935, "__init__", autospec=True, return_value=None)
     as3935.AS3935_SPI(spi, mock_cs_pin, baud, interrupt_pin=int_pin)
     # Check that cs pin converted to a DigitalInOut object
     mock_digitalio.assert_called_once_with(mock_cs_pin)
@@ -66,14 +63,8 @@ def test_as3935_instantiated_with_correct_args_from_as3935_spi(
     mock_as3935_init.assert_called_once_with(test_as3935, interrupt_pin=int_pin)
 
 
-@pytest.mark.parametrize("addr, data_byte", [(0x04, 0xFF), (0x0E, 0x44)])
-def test_write_byte_out_calls_spi_dev_write_with_correct_kwargs(
-    mocker, addr, data_byte
-):
-    # Confirm that the correct _write_byte_out is being called
-    assert (
-        as3935.AS3935_SPI._write_byte_out.__qualname__ == "AS3935_SPI._write_byte_out"
-    )
+@pytest.mark.parametrize("addr, data_byte, buffer", [(0x0F, 0xff, 0x0f), (0x3f, 0x00, 0x3f), (0xf0, 0x55, 0x30)])
+def test_write_byte_out_sets_correct_bits_for_write_address_and_sends_correect_data(mocker, addr, data_byte, buffer):
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
     mock_as3935_init = mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
     mock_spidevice = mocker.patch.object(
@@ -82,17 +73,16 @@ def test_write_byte_out_calls_spi_dev_write_with_correct_kwargs(
     test_register = as3935._Register(addr, 0x55, 0x00)
     test_as3935_spi = as3935.AS3935_SPI("spi", "cs_pin", interrupt_pin="int_pin")
     test_as3935_spi._write_byte_out(test_register, data_byte)
-    name, _, kwargs = test_as3935_spi._bus.__enter__.return_value.mock_calls[0]
+    # Check that SPIDevice.write is called with the write bits set in the register address
+    assert as3935._BUFFER[0] == buffer
+    name, args, kwargs = test_as3935_spi._bus.__enter__.return_value.mock_calls[0]
     assert name == "write"
+    assert args == (as3935._BUFFER,)
     assert kwargs == {"end": 2}
 
 
-@pytest.mark.parametrize(
-    "addr, data, buffer", [(0x0F, 0xFF, 0x0F), (0x3F, 0x00, 0x3F), (0xF0, 0x55, 0x30)]
-)
-def test_write_byte_out_sets_correct_bits_for_write_address_and_sends_correect_data(
-    mocker, addr, data, buffer
-):
+@pytest.mark.parametrize("addr, data_byte, buffer", [(0x0f, 0xff, 0x4f), (0x3f, 0x00, 0x7f), (0xf0, 0x55, 0x70)])
+def test_read_byte_in_sets_correct_bits_for_read_address_and_sends_correect_data(mocker, addr, data_byte, buffer):
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
     mock_as3935_init = mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
     mock_spidevice = mocker.patch.object(
@@ -100,8 +90,10 @@ def test_write_byte_out_sets_correct_bits_for_write_address_and_sends_correect_d
     )
     test_register = as3935._Register(addr, 0x55, 0x00)
     test_as3935_spi = as3935.AS3935_SPI("spi", "cs_pin", interrupt_pin="int_pin")
-    test_as3935_spi._write_byte_out(test_register, data)
-    assert as3935._BUFFER[0] == buffer
-    name, args, _ = test_as3935_spi._bus.__enter__.return_value.mock_calls[0]
+    test_as3935_spi._read_byte_in(test_register)
+    name, args, kwargs = test_as3935_spi._bus.__enter__.return_value.mock_calls[0]
     assert name == "write"
-    assert args == (as3935._BUFFER,)
+    assert kwargs == {"end": 1}
+    name, _, kwargs = test_as3935_spi._bus.__enter__.return_value.mock_calls[1]
+    assert name == "readinto"
+    assert kwargs == {"end": 1}
