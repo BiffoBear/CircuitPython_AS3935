@@ -54,9 +54,10 @@ def test_write_byte_out_calls_i2c_dev_write_with_correct_kwargs(
     test_register = as3935._Register(addr, 0x55, 0x00)
     test_as3935_i2c = as3935.AS3935_I2C("i2c", interrupt_pin="int_pin")
     test_as3935_i2c._write_byte_out(test_register, data_byte)
-    test_as3935_i2c._bus.writeto.assert_called_once_with(
-        addr, bytearray([data_byte, 0x00]), end=1
-    )
+    name, args, kwargs = test_as3935_i2c._bus.__enter__.return_value.mock_calls[0]
+    assert name == "write"
+    assert args == (as3935._BUFFER,)
+    assert kwargs == {"end": 2}
 
 
 @pytest.mark.parametrize("addr, data_byte", [(0x04, 0xFF), (0x0E, 0x44)])
@@ -72,7 +73,8 @@ def test_read_byte_in_calls_i2c_dev_write_then_readinto_with_correct_args(
     test_register = as3935._Register(addr, 0x55, 0x00)
     test_as3935_i2c = as3935.AS3935_I2C("i2c", interrupt_pin="int_pin")
     as3935._BUFFER[0] = data_byte
-    assert test_as3935_i2c._read_byte_in(test_register) == data_byte
-    test_as3935_i2c._bus.write_then_readinto.assert_called_once_with(
-        addr, as3935._BUFFER, as3935._BUFFER, out_end=1, in_end=1
-    )
+    assert test_as3935_i2c._read_byte_in(test_register) == addr
+    name, args, kwargs = test_as3935_i2c._bus.__enter__.return_value.mock_calls[0]
+    assert name == "write_then_readinto"
+    assert args == (as3935._BUFFER, as3935._BUFFER)
+    assert kwargs == {'in_end': 1, 'out_end': 1}
