@@ -33,7 +33,8 @@ from CircuitPython_AS3935 import biffobear_as3935 as as3935
     ],
 )
 def test_as3935_instantiated_with_correct_args_from_as3935_spi(
-    mocker, spi, cs_pin_in, cs_pin_out, baud, spibus, int_pin):
+    mocker, spi, cs_pin_in, cs_pin_out, baud, spibus, int_pin
+):
     assert issubclass(as3935.AS3935_SPI, as3935.AS3935)
     mock_cs_pin = mocker.Mock(name=cs_pin_in)
     mock_digitalio = mocker.patch.object(
@@ -42,7 +43,9 @@ def test_as3935_instantiated_with_correct_args_from_as3935_spi(
     mock_spidevice = mocker.patch.object(
         as3935.spi_dev, "SPIDevice", return_value=spibus
     )
-    mock_as3935_init = mocker.patch.object(as3935.AS3935, "__init__", autospec=True, return_value=None)
+    mock_as3935_init = mocker.patch.object(
+        as3935.AS3935, "__init__", autospec=True, return_value=None
+    )
     as3935.AS3935_SPI(spi, mock_cs_pin, baud, interrupt_pin=int_pin)
     # Check that cs pin converted to a DigitalInOut object
     mock_digitalio.assert_called_once_with(mock_cs_pin)
@@ -64,7 +67,9 @@ def test_as3935_instantiated_with_correct_args_from_as3935_spi(
 
 
 @pytest.mark.parametrize("addr, data_byte", [(0x04, 0xFF), (0x0E, 0x44)])
-def test_write_byte_out_calls_spi_dev_write_with_correct_kwargs(mocker, addr, data_byte):
+def test_write_byte_out_calls_spi_dev_write_with_correct_kwargs(
+    mocker, addr, data_byte
+):
     # Confirm that the correct _write_byte_out is being called
     assert (
         as3935.AS3935_SPI._write_byte_out.__qualname__ == "AS3935_SPI._write_byte_out"
@@ -82,8 +87,12 @@ def test_write_byte_out_calls_spi_dev_write_with_correct_kwargs(mocker, addr, da
     assert kwargs == {"end": 2}
 
 
-@pytest.mark.parametrize("addr, data, buffer", [(0x0F, 0xff, 0x0f), (0x3F, 0x00, 0x3f), (0xF0, 0x55, 0x30)])
-def test_write_byte_out_sets_correct_bits_for_write_address_and_sends_correect_data(mocker, addr, data, buffer):
+@pytest.mark.parametrize(
+    "addr, data, buffer", [(0x0F, 0xFF, 0x0F), (0x3F, 0x00, 0x3F), (0xF0, 0x55, 0x30)]
+)
+def test_write_byte_out_sets_correct_bits_for_write_address_and_sends_correect_data(
+    mocker, addr, data, buffer
+):
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
     mock_as3935_init = mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
     mock_spidevice = mocker.patch.object(

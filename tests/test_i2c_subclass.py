@@ -22,7 +22,9 @@ def test_as3935_AS3935_I2C_instantiated_with_correct_args(
     mock_i2cdevice = mocker.patch.object(
         as3935.i2c_dev, "I2CDevice", return_value=i2cbus
     )
-    mock_as3935_init = mocker.patch.object(as3935.AS3935, "__init__", autospec=True, return_value=None)
+    mock_as3935_init = mocker.patch.object(
+        as3935.AS3935, "__init__", autospec=True, return_value=None
+    )
     as3935.AS3935_I2C(i2c, address, interrupt_pin=int_pin)
     # Confirm that I2CDevice called with correct values
     mock_i2cdevice.assert_called_once_with(i2c, address)

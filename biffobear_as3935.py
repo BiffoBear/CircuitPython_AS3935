@@ -544,9 +544,10 @@ class AS3935_I2C(AS3935):
 
 
 class AS3935_SPI(AS3935):
-
     def __init__(self, spi, cs_pin, baudrate=1_000_000, *, interrupt_pin):
-        self._bus = spi_dev.SPIDevice(spi, digitalio.DigitalInOut(cs_pin), baudrate=baudrate, polarity=1, phase=0)
+        self._bus = spi_dev.SPIDevice(
+            spi, digitalio.DigitalInOut(cs_pin), baudrate=baudrate, polarity=1, phase=0
+        )
         super().__init__(interrupt_pin=interrupt_pin)
 
     def _write_byte_out(self, register, data):
