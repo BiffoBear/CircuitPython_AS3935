@@ -82,27 +82,6 @@ _FREQ_DIVISOR = (_0X10, _0X20, _0X40, _0X80)
 _BUFFER = bytearray(2)
 
 
-def as3935_spi(spi, cs_pin, baudrate=1_000_000, *, interrupt_pin):
-    """Creates an instance of the Franklin AS3935 driver with a SPI bus connection.
-
-    :param busio.SPI spi: The SPI bus connected to the chip.  Ensure SCK, MOSI, and MISO are
-        connected.
-    :param ~board.Pin cs: The pin connected to the chip's CS/chip select line.
-    :param int baudrate: SPI bus baudrate. Defaults to 1,000,000 . If another baudrate is
-        selected, avoid +/- 500,000 as this may interfere with the chip's antenna.
-    :param ~board.Pin interrupt_pin: The pin connected to the chip's interrupt line. Note
-        that CircuitPython currently does not support interrupts, but the line is held high
-        for at least one second per event, so it may be polled. Some single board computers,
-        e.g. the Raspberry Pi, do support interrupts.
-    """
-    return AS3935(
-        bus=spi_dev.SPIDevice(
-            spi, digitalio.DigitalInOut(cs_pin), baudrate=baudrate, polarity=1, phase=0
-        ),
-        interrupt_pin=interrupt_pin,
-    )
-
-
 def _reg_value_from_choices(value, choices):
     """Return the index of a value from an iterable."""
     try:
