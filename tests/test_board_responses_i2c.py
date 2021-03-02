@@ -56,7 +56,7 @@ def setup_module():
     except AttributeError:
         interrupt = board.D7
 
-    device = as3935.as3935_12c(i2c, interrupt_pin=interrupt)
+    device = as3935.AS3935_I2C(i2c, interrupt_pin=interrupt)
     device.reset()
 
 

@@ -511,14 +511,15 @@ class AS3935_I2C(AS3935):
         """Write one byte to the selected register."""
         # Overrides AS3935._write_byte_out to handle writing data to the I2C bus
         _BUFFER[0] = data
-        self._bus.writeto(register.addr, _BUFFER, end=1)
+        with self._bus as bus:
+            bus.write(_BUFFER, end=1)
 
     def _read_byte_in(self, register):
         """Read one byte from the selected register."""
         # Overrides AS3935._read_byte_in to handle writing data to the I2C bus
-        self._bus.write_then_readinto(
-            register.addr, _BUFFER, _BUFFER, out_end=1, in_end=1
-        )
+        _BUFFER[0] = register.addr
+        with self._bus as bus:
+            bus.write_then_readinto(_BUFFER, _BUFFER, out_end=1, in_end=1)
         return _BUFFER[0]
 
 
