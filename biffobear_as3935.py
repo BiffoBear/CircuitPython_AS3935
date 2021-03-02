@@ -182,8 +182,9 @@ class AS3935:
 
     def _set_register(self, register, value):
         """Read the byte containing the register, mask in the new value and write out the byte."""
+        # pylint: disable=assignment-from-no-return
         register_byte = self._read_byte_in(register)
-        # apset
+        # pylint: enable=assignment-from-no-return
         register_byte &= ~register.mask
         register_byte |= (value << register.offset) & _0XFF
         self._write_byte_out(register, register_byte)
