@@ -47,6 +47,7 @@ def test_write_byte_out_calls_i2c_dev_write_with_correct_kwargs(
     assert (
         as3935.AS3935_I2C._write_byte_out.__qualname__ == "AS3935_I2C._write_byte_out"
     )
+    mock_sleep = mocker.patch.object(as3935.time, "sleep", autospec=True)
     mock_as3935_init = mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
     mock_i2cdevice = mocker.patch.object(
         as3935.i2c_dev, "I2CDevice", autospec=True, return_value=mocker.MagicMock()
@@ -58,6 +59,7 @@ def test_write_byte_out_calls_i2c_dev_write_with_correct_kwargs(
     assert name == "write"
     assert args == (as3935._BUFFER,)
     assert kwargs == {"end": 2}
+    mock_sleep.assert_called_once_with(0.01)
 
 
 @pytest.mark.parametrize("addr, data_byte", [(0x04, 0xFF), (0x0E, 0x44)])
@@ -66,6 +68,7 @@ def test_read_byte_in_calls_i2c_dev_write_then_readinto_with_correct_args(
 ):
     # Confirm that the correct _read_byte_in is being called
     assert as3935.AS3935_I2C._read_byte_in.__qualname__ == "AS3935_I2C._read_byte_in"
+    mock_sleep = mocker.patch.object(as3935.time, "sleep", autospec=True)
     mock_as3935_init = mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
     mock_i2cdevice = mocker.patch.object(
         as3935.i2c_dev, "I2CDevice", autospec=True, return_value=mocker.MagicMock()
@@ -78,3 +81,4 @@ def test_read_byte_in_calls_i2c_dev_write_then_readinto_with_correct_args(
     assert name == "write_then_readinto"
     assert args == (as3935._BUFFER, as3935._BUFFER)
     assert kwargs == {"in_end": 1, "out_end": 1}
+    mock_sleep.assert_called_once_with(0.01)

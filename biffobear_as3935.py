@@ -510,6 +510,9 @@ class AS3935_I2C(AS3935):
     def _write_byte_out(self, register, data):
         """Write one byte to the selected register."""
         # Overrides AS3935._write_byte_out to handle writing data to the I2C bus
+        # AS3935 chip returns unexpected 0x00s intermittently
+        # Short pause to space out consecutive calls
+        time.sleep(0.01)
         _BUFFER[0] = register.addr
         _BUFFER[1] = data
         with self._bus as bus:
@@ -518,6 +521,9 @@ class AS3935_I2C(AS3935):
     def _read_byte_in(self, register):
         """Read one byte from the selected register."""
         # Overrides AS3935._read_byte_in to handle writing data to the I2C bus
+        # AS3935 chip returns unexpected 0x00s intermittently
+        # Short pause to space out consecutive calls
+        time.sleep(0.01)
         _BUFFER[0] = register.addr
         with self._bus as bus:
             bus.write_then_readinto(_BUFFER, _BUFFER, out_end=1, in_end=1)
@@ -542,6 +548,9 @@ class AS3935_SPI(AS3935):
 
     def _write_byte_out(self, register, data):
         """Write one byte to the selected register."""
+        # AS3935 chip returns unexpected 0x00s intermittently
+        # Short pause to space out consecutive calls
+        time.sleep(0.01)
         _BUFFER[0] = register.addr & _0X3F  # Set bits 15 and 14 to 00 - write
         _BUFFER[1] = data
         with self._bus as bus:
@@ -549,6 +558,9 @@ class AS3935_SPI(AS3935):
 
     def _read_byte_in(self, register):
         """Read one byte from the selected address."""
+        # AS3935 chip returns unexpected 0x00s intermittently
+        # Short pause to space out consecutive calls
+        time.sleep(0.01)
         _BUFFER[0] = (register.addr & _0X3F) | _0X40  # Set bits 15 and 14 to 01 - read
         with self._bus as bus:
             bus.write(_BUFFER, end=1)

@@ -73,6 +73,7 @@ def test_as3935_instantiated_with_correct_args_from_as3935_spi(
 def test_write_byte_out_sets_correct_bits_for_write_address_and_sends_correect_data(
     mocker, addr, data_byte, buffer
 ):
+    mock_sleep = mocker.patch.object(as3935.time, "sleep", autospec=True)
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
     mock_as3935_init = mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
     mock_spidevice = mocker.patch.object(
@@ -87,6 +88,7 @@ def test_write_byte_out_sets_correct_bits_for_write_address_and_sends_correect_d
     assert name == "write"
     assert args == (as3935._BUFFER,)
     assert kwargs == {"end": 2}
+    mock_sleep.assert_called_once_with(0.01)
 
 
 @pytest.mark.parametrize(
@@ -96,6 +98,7 @@ def test_write_byte_out_sets_correct_bits_for_write_address_and_sends_correect_d
 def test_read_byte_in_sets_correct_bits_for_read_address_and_sends_correect_data(
     mocker, addr, data_byte, buffer
 ):
+    mock_sleep = mocker.patch.object(as3935.time, "sleep", autospec=True)
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
     mock_as3935_init = mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
     mock_spidevice = mocker.patch.object(
@@ -110,3 +113,4 @@ def test_read_byte_in_sets_correct_bits_for_read_address_and_sends_correect_data
     name, _, kwargs = test_as3935_spi._bus.__enter__.return_value.mock_calls[1]
     assert name == "readinto"
     assert kwargs == {"end": 1}
+    mock_sleep.assert_called_once_with(0.01)
