@@ -58,7 +58,7 @@ def setup_module():
         cs = board.D5
         interrupt = board.D7
 
-    device = as3935.as3935_spi(spi, cs, interrupt_pin=interrupt)
+    device = as3935.AS3935_SPI(spi, cs, interrupt_pin=interrupt)
     device.reset()
 
 

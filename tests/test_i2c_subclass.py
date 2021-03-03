@@ -77,4 +77,4 @@ def test_read_byte_in_calls_i2c_dev_write_then_readinto_with_correct_args(
     name, args, kwargs = test_as3935_i2c._bus.__enter__.return_value.mock_calls[0]
     assert name == "write_then_readinto"
     assert args == (as3935._BUFFER, as3935._BUFFER)
-    assert kwargs == {'in_end': 1, 'out_end': 1}
+    assert kwargs == {"in_end": 1, "out_end": 1}
