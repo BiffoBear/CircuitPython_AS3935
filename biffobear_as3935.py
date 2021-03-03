@@ -473,6 +473,7 @@ class AS3935:
         # checking the clock calibration status tells the that the clocks are OK and if
         # the calibration times out, we know that there are no comms with the sensor
         self.reset()
+        self._calibrate_clocks()
         self._check_clock_calibration()
 
 
