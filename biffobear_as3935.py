@@ -17,7 +17,7 @@ Implementation Notes
 
 **Hardware:**
 
-* Lightning detector board based on the Franklin AS3935 IC.
+* A lightning detector board based on the Franklin AS3935 IC.
 
 **Software and Dependencies:**
 
@@ -104,11 +104,7 @@ def _value_is_in_range(value, *, lo_limit, hi_limit):
 
 
 class AS3935:
-    """Supports the Franklin AS3935 lightning detector chip via SPI and I2C interface. Allows
-    monitoring for lightning events by polling an 'interrupt' pin that is held high for one
-    second after an event. Allows reading strength of the last strike and estimated
-    distance to the storm front. Antenna trimming, clock calibration, etc. are also
-    implemented.
+    """Driver for the Franklin AS3935 lightning detector chip.
 
     :param ~board.Pin interrupt_pin: The pin connected to the chip's interrupt line. Note
         that CircuitPython currently does not support interrupts, but the line is held high
@@ -213,10 +209,8 @@ class AS3935:
 
     @property
     def watchdog(self):
-        """int: Watchdog threshold. Higher thresholds decrease triggers by disturbers
-        but reduce sensitivity to lightning strikes.
-
-        Integer in the range 0 - 10. Default is 2.
+        """int: Watchdog thresholdin the range 0 - 10 (default is 2). Higher thresholds reduce
+        triggers by disturbers but decrease sensitivity to lightning strikes.
         """
         return self._get_register(self._WDTH)
 
@@ -228,11 +222,9 @@ class AS3935:
 
     @property
     def noise_floor_limit(self):
-        """int: Get or set the noise floor limit threshold. When this threshold is
-        exceeded, an interrupt is issued. Higher values allow operation with
-        higher background noise but decrease sensitivity.
-
-        Integer in the range 0 - 7. Default is 2.
+        """int: Get or set the noise floor limit threshold in the range 0 - 7 (default is 2). When
+        this threshold is exceeded, an interrupt is issued. Higher values allow operation with
+        higher background noise but decrease sensitivity to lightning strikes.
         """
         return self._get_register(self._NF_LEV)
 
@@ -244,10 +236,8 @@ class AS3935:
 
     @property
     def spike_threshold(self):
-        """int: Get or set the spike rejection threshold. Higher values reduce
-        false triggers but reduce sensitivity.
-
-        Integer in the range 0 - 10. Default is 2.
+        """int: Get or set the spike rejection threshold in the range 0 - 10 (default is 2). Higher
+        values reduce false triggers but decrease sensitivity to lightning strikes.
         """
         return self._get_register(self._SREJ)
 
@@ -270,9 +260,8 @@ class AS3935:
 
     @property
     def distance(self):
-        """int: Estimated distance to the storm front (km).
-
-        Returns None if storm front is out of range (> 40 km).
+        """int: Estimated distance to the storm front (km). Returns None if storm front is out of
+        range (> 40 km).
         """
         distance = self._get_register(self._DISTANCE)
         if distance == 0x3F:  # Storm out of range
@@ -283,15 +272,10 @@ class AS3935:
 
     @property
     def interrupt_status(self):
-        """int: Status of the interrupt register.
+        """int: Status of the interrupt register. These constants are defined as helpers:
+        LIGHTNING, DISTURBER. NOISE, DATA_PURGE.
 
-        The following class constants are defined as helpers:
-        DATA_PURGE = 0x00  # Distance recalculated after purging old data
-        NOISE = 0x01  # INT_NH Noise level too high. Stays high while noise remains
-        DISTURBER = 0x04  # INT_D  Disturber detected
-        LIGHTNING = 0x08  # INT_L  Lightning strike
-
-        This register is cleared after it is read.
+        note:: This register is automatically cleared by the sensor after it is read.
         """
         # Wait a minimum of 2 ms between the interrupt pin going high and reading the register
         time.sleep(0.0002)
@@ -330,7 +314,7 @@ class AS3935:
 
     def clear_stats(self):
         """Clear statistics from lightning distance emulation block. This resets the
-        data used to calculate the distance to the storm fron.
+        data used to calculate the distance to the storm front.
         """
         self._set_register(self._CL_STAT, 0x01)
         self._set_register(self._CL_STAT, 0x00)
@@ -451,7 +435,7 @@ class AS3935:
         while not (trco_result and srco_result):
             if time.monotonic() - start > _0X01:
                 raise OSError(
-                    "Unable to communicate with the sensor. Check your wiring."
+                    "Problem communicating with the sensor. Check your wiring."
                 )
             trco_result = self._get_register(self._TRCO_CALIB)
             srco_result = self._get_register(self._SRCO_CALIB)
@@ -497,7 +481,7 @@ class AS3935:
 
 
 class AS3935_I2C(AS3935):
-    """Instatiates the Franklin AS3935 driver with an I2C bus connection.
+    """Driver for the Franklin AS3935 with an I2C connection.
 
     :param busio.I2C i2c: The I2C bus connected to the chip.
     :param int address: The I2C address of the chip. Default is 0x03.
@@ -535,13 +519,17 @@ class AS3935_I2C(AS3935):
 
 
 class AS3935_SPI(AS3935):
-    """Creates an instance of the Franklin AS3935 driver with a SPI bus connection.
+    """Driver for the Franklin AS3935 with a SPI connection.
 
     :param busio.SPI spi: The SPI bus connected to the chip.  Ensure SCK, MOSI, and MISO are
         connected.
     :param ~board.Pin cs: The pin connected to the chip's CS/chip select line.
     :param int baudrate: SPI bus baudrate. Defaults to 1,000,000 . If another baudrate is
         selected, avoid +/- 500,000 as this may interfere with the chip's antenna.
+    :param ~board.Pin interrupt_pin: The pin connected to the chip's interrupt line. Note
+        that CircuitPython currently does not support interrupts, but the line is held high
+        for at least one second per event, so it may be polled. Some single board computers,
+        e.g. the Raspberry Pi, do support interrupts.
     """
 
     def __init__(self, spi, cs_pin, baudrate=1_000_000, *, interrupt_pin):
