@@ -48,6 +48,7 @@ device = None
 
 def setup_module():
     # Returns an instance of the AS3935 driver
+    print("Setting up SPI connection...")
     global device
     spi = board.SPI()
     try:

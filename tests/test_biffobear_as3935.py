@@ -8,6 +8,7 @@
 # pylint: skip-file
 
 import time
+import inspect
 from collections import namedtuple
 from random import random
 from unittest.mock import PropertyMock
@@ -29,8 +30,8 @@ def set_reg(mocker):
 def test_device(mocker):
     # Returns an instance of the AS3935 driver with SDIDevice patched.
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
-    # mocker.patch.object(as3935.AS3935, "reset", return_value=None)
-    return as3935.AS3935(interrupt_pin="int")
+    mocker.patch.object(as3935.AS3935, "_startup_checks", return_value=None)
+    return as3935.AS3935(interrupt_pin="int_pin")
 
 
 @pytest.fixture
@@ -39,7 +40,6 @@ def test_register():
     return as3935._Register(0x01, 0x04, 0b0111_0000)
 
 
-# @pytest.mark.skip
 def test_register_onstants():
     assert as3935._0X00 == 0x00
     assert as3935._0X01 == 0x01
@@ -89,11 +89,9 @@ def test_other_constants():
     assert as3935.AS3935.DIRECT_COMMAND == 0x96
 
 
-def test_spi_command_buffers():
-    assert isinstance(as3935.AS3935._ADDR_BUFFER, bytearray)
-    assert len(as3935.AS3935._ADDR_BUFFER) == 1
-    assert isinstance(as3935.AS3935._DATA_BUFFER, bytearray)
-    assert len(as3935.AS3935._DATA_BUFFER) == 1
+def test_address_and_data_command_buffers():
+    assert isinstance(as3935._BUFFER, bytearray)
+    assert len(as3935._BUFFER) == 2
 
 
 @pytest.mark.parametrize(
@@ -132,24 +130,50 @@ def test_init_method_called_with_correct_args(mocker):
     mock_init = mocker.patch.object(
         as3935.AS3935, "__init__", autospec=True, return_value=None
     )
-    test_as3935 = as3935.AS3935(interrupt_pin="int")
-    mock_init.assert_called_once_with(test_as3935, interrupt_pin="int")
+    test_as3935 = as3935.AS3935(interrupt_pin="pin")
+    mock_init.assert_called_once_with(test_as3935, interrupt_pin="pin")
 
 
 @pytest.mark.parametrize(
-    "int_pin, return_pin", [("int_pin1", "return_pin1"), ("int_pin2", "return_pin2")]
+    "int_pin, int_pin_out",
+    [("int_pin1", "int_pin_out1"), ("int_pin2", "int_pin_out2")],
 )
-def test_init_calls(mocker, int_pin, return_pin):
-    mock_digital_in_out = mocker.patch.object(
-        as3935.digitalio, "DigitalInOut", autospec=True
+def test_init_calls(mocker, int_pin, int_pin_out):
+    mock_int_pin = mocker.Mock(name=int_pin)
+    mock_digitalinout = mocker.patch.object(
+        as3935.digitalio, "DigitalInOut", return_value=mock_int_pin
     )
-    mock_direction = mocker.patch.object(as3935.digitalio, "Direction", autospec=True)
-    mock_direction.INPUT.return_value = "return_pin"
-    mock_reset = mocker.patch.object(as3935.AS3935, "reset", autospec=True)
-    # Test interrupt pin setup
-    test_as3935 = as3935.AS3935(interrupt_pin=int_pin)
-    mock_digital_in_out.assert_called_once_with(int_pin)
-    # Need to test pin direction setting
+    mock_startup_checks = mocker.patch.object(
+        as3935.AS3935, "_startup_checks", autospec=True
+    )
+    test_as3935 = as3935.AS3935(interrupt_pin=mock_int_pin)
+    mock_digitalinout.assert_called_once_with(mock_int_pin)
+    # Confirm DigitalInOut object from interrupt_pin arg is assigned to self.interrupt_pin
+    assert test_as3935._interrupt_pin == mock_int_pin
+    # Check that DigitalInOUt called with interrupt_pin from args
+    mock_digitalinout.assert_called_once_with(mock_int_pin)
+    # Check that interrupt pin direction is correctly set
+    # No test yet
+    # Check that startup checks are run
+    mock_startup_checks.assert_called_once()
+
+
+def test_read_byte_in_has_same_signature_as_subclasses():
+    assert inspect.signature(as3935.AS3935._read_byte_in) == inspect.signature(
+        as3935.AS3935_I2C._read_byte_in
+    )
+    assert inspect.signature(as3935.AS3935._read_byte_in) == inspect.signature(
+        as3935.AS3935_SPI._read_byte_in
+    )
+
+
+def test_write_byte_out_has_same_signature_as_subclasses():
+    assert inspect.signature(as3935.AS3935._write_byte_out) == inspect.signature(
+        as3935.AS3935_I2C._write_byte_out
+    )
+    assert inspect.signature(as3935.AS3935._write_byte_out) == inspect.signature(
+        as3935.AS3935_SPI._write_byte_out
+    )
 
 
 @pytest.mark.parametrize(
@@ -598,3 +622,18 @@ def test_interrupt_set(
     type(test_device._interrupt_pin).value = PropertyMock(return_value=pin_value)
     get_reg.return_value = reg_value
     assert test_device.interrupt_set is return_value
+
+
+def test_startup_checks(mocker):
+    mock_init = mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
+    mock_reset = mocker.patch.object(
+        as3935.AS3935, "reset", autospec=True, return_value=None
+    )
+    mock_check_clock_calibration = mocker.patch.object(
+        as3935.AS3935, "_check_clock_calibration", autospec=True, return_value=None
+    )
+    # Confirm reset and check clock calibration functions were called
+    test_device = as3935.AS3935(bus="bus", interrupt_pin="pin")
+    test_device._startup_checks()
+    mock_reset.assert_called_once()
+    mock_check_clock_calibration.assert_called_once()

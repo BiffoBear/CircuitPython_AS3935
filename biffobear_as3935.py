@@ -5,11 +5,10 @@
 `biffobear_as3935`
 ================================================================================
 
-CircuitPython driver library for the AS3935 lightning detector.
+CircuitPython driver library for the AS3935 lightning detector over SPI or I2C
+buses.
 
-.. warning:: The AS3935 chip supports I2C but Sparkfun found it unreliable so
-   this driver is SPI only.
-
+.. warning:: The AS3935 chip supports I2C but Sparkfun found it unreliable.
 
 * Author(s): Martin Stephens
 
@@ -25,7 +24,7 @@ Implementation Notes
 * Adafruit CircuitPython firmware for the supported boards:
   https://github.com/adafruit/circuitpython/releases
 
-* Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
+* Adafruit's Bus bus library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 """
 
 import time
@@ -33,6 +32,7 @@ from collections import namedtuple
 from micropython import const
 import digitalio
 import adafruit_bus_device.spi_device as spi_dev
+import adafruit_bus_device.i2c_device as i2c_dev
 
 
 __version__ = "0.0.0-auto.0"
@@ -75,8 +75,11 @@ _0XC0 = const(0xC0)
 _0XE0 = const(0xE0)
 _0XFF = const(0xFF)
 
+# Valid inputs for strike count threshold and frequency divisor registers
 _LIGHTNING_COUNT = (_0X01, _0X05, _0X09, _0X10)
 _FREQ_DIVISOR = (_0X10, _0X20, _0X40, _0X80)
+# Global buffer for bus data and address
+_BUFFER = bytearray(2)
 
 
 def _reg_value_from_choices(value, choices):
@@ -101,7 +104,7 @@ def _value_is_in_range(value, *, lo_limit, hi_limit):
 
 
 class AS3935:
-    """Supports the Franklin AS3935 lightning detector chip via the SPI interface. Allows
+    """Supports the Franklin AS3935 lightning detector chip via SPI and I2C interface. Allows
     monitoring for lightning events by polling an 'interrupt' pin that is held high for one
     second after an event. Allows reading strength of the last strike and estimated
     distance to the storm front. Antenna trimming, clock calibration, etc. are also
@@ -111,12 +114,11 @@ class AS3935:
         that CircuitPython currently does not support interrupts, but the line is held high
         for at least one second per event, so it may be polled. Some single board computers,
         e.g. the Raspberry Pi, do support interrupts.
+<<<<<<< HEAD
 
+=======
+>>>>>>> dev
     """
-
-    # Global bufferS for SPI commands and address
-    _ADDR_BUFFER = bytearray(1)
-    _DATA_BUFFER = bytearray(1)
 
     # Constants to make register values human readable in the code
     DATA_PURGE = _0X00  # 0x00 - Distance recalculated after purging old data
@@ -168,14 +170,15 @@ class AS3935:
     def __init__(self, *, interrupt_pin):
         self._interrupt_pin = digitalio.DigitalInOut(interrupt_pin)
         self._interrupt_pin.direction = digitalio.Direction.INPUT
+        self._startup_checks()
 
     def _read_byte_in(self, register):
         """Read one byte from the selected address."""
-        # Stub for testing. Overridden by AS3935_SPI and AS3935_I2C
+        # Stub method for testing. Overridden when subclass instatiates class.
 
     def _write_byte_out(self, register, data):
-        """Write one byte to the selected address."""
-        # Stub for testing. Overridden by AS3935_SPI and AS3935_I2C
+        """Write one byte to the selected register."""
+        # Stub method for testing. Overridden when subclass instatiates class.
 
     def _get_register(self, register):
         """Read the current register byte, mask and shift the value."""
@@ -183,11 +186,12 @@ class AS3935:
 
     def _set_register(self, register, value):
         """Read the byte containing the register, mask in the new value and write out the byte."""
-        # Pylint is checking against a stub method that is overriden by subclasses
-        byte = self._read_byte_in(register)  # pylint: disable=assignment-from-no-return
-        byte &= ~register.mask
-        byte |= (value << register.offset) & _0XFF
-        self._write_byte_out(register, byte)
+        # pylint: disable=assignment-from-no-return
+        register_byte = self._read_byte_in(register)
+        # pylint: enable=assignment-from-no-return
+        register_byte &= ~register.mask
+        register_byte |= (value << register.offset) & _0XFF
+        self._write_byte_out(register, register_byte)
 
     @property
     def indoor(self):
@@ -334,8 +338,8 @@ class AS3935:
 
     @property
     def power_down(self):
-        """bool: Power status. If True, the unit is powered off although the SPI bus remains
-        active."""
+        """bool: Power status. If True, the unit is powered off although the SPI and I2C buses
+        remain active."""
         return bool(self._get_register(self._PWD))
 
     @power_down.setter
@@ -482,38 +486,87 @@ class AS3935:
             return None
         return self._interrupt_pin.value
 
+    def _startup_checks(self):
+        """Check communication with the AS3935 and confirm clocks are calibrated."""
+        # With no sensor connected, reading the SPI bus returns 0x00. After a reset
+        # the clocks are calibrated automatically. Therefore, resetting the sensor then
+        # checking the clock calibration status tells the that the clocks are OK and if
+        # the calibration times out, we know that there are no comms with the sensor
+        self.reset()
+        self._check_clock_calibration()
+
+
+class AS3935_I2C(AS3935):
+    """Instatiates the Franklin AS3935 driver with an I2C bus connection.
+
+    :param busio.I2C i2c: The I2C bus connected to the chip.
+    :param int address: The I2C address of the chip. Default is 0x03.
+    :param ~board.Pin interrupt_pin: The pin connected to the chip's interrupt line. Note
+        that CircuitPython currently does not support interrupts, but the line is held high
+        for at least one second per event, so it may be polled. Some single board computers,
+        e.g. the Raspberry Pi, do support interrupts.
+    """
+
+    def __init__(self, i2c, address=0x03, *, interrupt_pin):
+        self._bus = i2c_dev.I2CDevice(i2c, address)
+        super().__init__(interrupt_pin=interrupt_pin)
+
+    def _write_byte_out(self, register, data):
+        """Write one byte to the selected register."""
+        # Overrides AS3935._write_byte_out to handle writing data to the I2C bus
+        # AS3935 chip returns unexpected 0x00s intermittently
+        # Short pause to space out consecutive calls
+        time.sleep(0.01)
+        _BUFFER[0] = register.addr
+        _BUFFER[1] = data
+        with self._bus as bus:
+            bus.write(_BUFFER, end=2)
+
+    def _read_byte_in(self, register):
+        """Read one byte from the selected register."""
+        # Overrides AS3935._read_byte_in to handle writing data to the I2C bus
+        # AS3935 chip returns unexpected 0x00s intermittently
+        # Short pause to space out consecutive calls
+        time.sleep(0.01)
+        _BUFFER[0] = register.addr
+        with self._bus as bus:
+            bus.write_then_readinto(_BUFFER, _BUFFER, out_end=1, in_end=1)
+        return _BUFFER[0]
+
 
 class AS3935_SPI(AS3935):
-    """Driver for the Franklin AS3935 lightning detector chip connected to the SPI bus.
+    """Creates an instance of the Franklin AS3935 driver with a SPI bus connection.
 
     :param busio.SPI spi: The SPI bus connected to the chip.  Ensure SCK, MOSI, and MISO are
         connected.
     :param ~board.Pin cs: The pin connected to the chip's CS/chip select line.
-    :param int baudrate: Clock rate. Default is 2,000,000 which is the maximum supported by the
-        chip. If another baudrate is selected, avoid +/- 500,000 as this will interfere with the
-        chip's antenna.
+    :param int baudrate: SPI bus baudrate. Defaults to 1,000,000 . If another baudrate is
+        selected, avoid +/- 500,000 as this may interfere with the chip's antenna.
     """
 
-    def __init__(self, spi, cs, *, baudrate=2_000_000, interrupt_pin):
-        self._device = spi_dev.SPIDevice(
-            spi, digitalio.DigitalInOut(cs), baudrate=baudrate, polarity=1, phase=0
+    def __init__(self, spi, cs_pin, baudrate=1_000_000, *, interrupt_pin):
+        self._bus = spi_dev.SPIDevice(
+            spi, digitalio.DigitalInOut(cs_pin), baudrate=baudrate, polarity=1, phase=0
         )
         super().__init__(interrupt_pin=interrupt_pin)
 
+    def _write_byte_out(self, register, data):
+        """Write one byte to the selected register."""
+        # AS3935 chip returns unexpected 0x00s intermittently
+        # Short pause to space out consecutive calls
+        time.sleep(0.01)
+        _BUFFER[0] = register.addr & _0X3F  # Set bits 15 and 14 to 00 - write
+        _BUFFER[1] = data
+        with self._bus as bus:
+            bus.write(_BUFFER, end=2)
+
     def _read_byte_in(self, register):
         """Read one byte from the selected address."""
-        self._ADDR_BUFFER[0] = (
-            register.addr & _0X3F
-        ) | _0X40  # Set bits 15 and 14 to 01 - read
-        with self._device as device:
-            device.write(self._ADDR_BUFFER, end=1)
-            device.readinto(self._DATA_BUFFER, end=1)
-            return self._DATA_BUFFER[0]
-
-    def _write_byte_out(self, register, data):
-        """Write one byte to the selected address."""
-        self._ADDR_BUFFER[0] = register.addr & _0X3F  # Set bits 15 and 14 to 00 - write
-        self._DATA_BUFFER[0] = data
-        with self._device as device:
-            device.write(self._ADDR_BUFFER, end=1)
-            device.write(self._DATA_BUFFER, end=1)
+        # AS3935 chip returns unexpected 0x00s intermittently
+        # Short pause to space out consecutive calls
+        time.sleep(0.01)
+        _BUFFER[0] = (register.addr & _0X3F) | _0X40  # Set bits 15 and 14 to 01 - read
+        with self._bus as bus:
+            bus.write(_BUFFER, end=1)
+            bus.readinto(_BUFFER, end=1)
+            return _BUFFER[0]
