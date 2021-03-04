@@ -34,7 +34,7 @@ while True:
             print(f"Distance to storm front = {sensor.distance} km")
         elif event_type == sensor.DISTURBER:
             print("False alarm")
-        else:
-            print("No event detected")
+    else:
+        print("No event detected")
     # Minimum time between strike events is 1 second so poll frequently!
     time.sleep(0.5)
