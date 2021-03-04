@@ -19,7 +19,7 @@ Introduction
     :target: https://github.com/psf/black
     :alt: Code Style: Black
 
-CircuitPython driver library for the Franklin AS3935 lightning detector. The driver supports connections via SPI and I2C.
+A CircuitPython driver library for the Franklin AS3935 lightning detector. The driver supports connections via SPI and I2C.
 
 .. note:: Sparkfun found `I2C connections unreliable <https://learn.sparkfun.com/tutorials/sparkfun-as3935-lightning-detector-hookup-guide-v20#spi-only>`_ and chose not to support it in their product.
 
