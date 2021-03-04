@@ -103,9 +103,8 @@ def _value_is_in_range(value, *, lo_limit, hi_limit):
     return value
 
 
-class _AS3935:
-    """Driver for the Franklin AS3935 lightning detector chip.
-    """
+class AS3935_Sensor:
+    """Driver for the Franklin AS3935 lightning detector chip."""
 
     # Constants to make register values human readable in the code
     DATA_PURGE = _0X00  # 0x00 - Distance recalculated after purging old data
@@ -471,7 +470,7 @@ class _AS3935:
         self._check_clock_calibration()
 
 
-class AS3935_I2C(_AS3935):
+class AS3935_I2C(AS3935_Sensor):
     """Driver for the Franklin AS3935 with an I2C connection.
 
     :param busio.I2C i2c: The I2C bus connected to the chip.
@@ -509,7 +508,7 @@ class AS3935_I2C(_AS3935):
         return _BUFFER[0]
 
 
-class AS3935(_AS3935):
+class AS3935(AS3935_Sensor):
     """Driver for the Franklin AS3935 with a SPI connection.
 
     :param busio.SPI spi: The SPI bus connected to the chip.  Ensure SCK, MOSI, and MISO are
