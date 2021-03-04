@@ -458,11 +458,10 @@ class AS3935:
     def interrupt_set(self):
         """bool: The state of the interrupt pin. Returns True if the pin is high,
         False if the pin is low and None if the pin is set to output a clock or
-        antenna frequency.
-
-        The interrupt pin is held high for 1.0 second after a lightning event.
-        The interrupt pin is held high for 1.5 seconds after a disturber event.
-        The interrupt pin is held high for the duration of high noise.
+        antenna frequency. The pin is pulled low again after the interrupt Status
+        register is read. If the the resgister is not read, then the pin is pulled
+        low again as follows: After 1.0 second for a lightning event, after 1.5 seconds
+        for a disturber event. The interrupt pin is held high for the duration of high noise.
         """
         # Return None if the interrupt pin is set to output a clock or antenna frequency,
         # otherwise, return the state of the interrupt pin
@@ -477,6 +476,7 @@ class AS3935:
         # checking the clock calibration status tells the that the clocks are OK and if
         # the calibration times out, we know that there are no comms with the sensor
         self.reset()
+        self._calibrate_clocks()
         self._check_clock_calibration()
 
 

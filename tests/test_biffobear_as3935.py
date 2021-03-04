@@ -629,6 +629,9 @@ def test_startup_checks(mocker):
     mock_reset = mocker.patch.object(
         as3935.AS3935, "reset", autospec=True, return_value=None
     )
+    mock_calibrate_clocks = mocker.patch.object(
+        as3935.AS3935, "_calibrate_clocks", autospec=True, return_value=None
+    )
     mock_check_clock_calibration = mocker.patch.object(
         as3935.AS3935, "_check_clock_calibration", autospec=True, return_value=None
     )
@@ -636,4 +639,5 @@ def test_startup_checks(mocker):
     test_device = as3935.AS3935(bus="bus", interrupt_pin="pin")
     test_device._startup_checks()
     mock_reset.assert_called_once()
+    mock_calibrate_clocks.assert_called_once()
     mock_check_clock_calibration.assert_called_once()
