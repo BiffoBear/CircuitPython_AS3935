@@ -19,7 +19,7 @@ Introduction
     :target: https://github.com/psf/black
     :alt: Code Style: Black
 
-CircuitPython driver library for the Franklin AS3935 lightning detector. The driver supports connections via SPI and I2C.
+A CircuitPython driver library for the Franklin AS3935 lightning detector. The driver supports connections via SPI and I2C.
 
 .. note:: Sparkfun found `I2C connections unreliable <https://learn.sparkfun.com/tutorials/sparkfun-as3935-lightning-detector-hookup-guide-v20#spi-only>`_ and chose not to support it in their product.
 
@@ -92,61 +92,42 @@ For a SPI connection:
 
 .. code-block:: python
 
-    import time
-    import board
-    import biffobear_as3935
+  """Loop and wait for an event.
 
-    spi = board.SPI()  # Works for most Adafruit and Blinka boards.
-    # Edit the following pins to match the connections to your board.
-    cs_pin = board.D5  # Connect to the sensor chip select pin.
-    interrupt_pin = board.D7  # Connected to the sensor interrupt pin.
+  Note that the sensor only responds to lightning and certain kinds of noise,
+  so unless it is stormy, there's not much to see here.
+  """
+  import time
+  import board
+  import biffobear_as3935
 
-    sensor = biffobear_as3935.AS3935_SPI(spi, cs_pin, interrupt_pin=interrupt_pin)
+  # Edit the chip select and interrupt pins to match the connections to your board
 
-    while True:
-        if sensor.interrupt_set:  # An event has occurred
-            # The interrupt_status is cleared after a read, so assign it
-            # to a variable in case you need the value later.
-            event_type = sensor.interrupt_status == sensor.LIGHTNING
-            if event_type == sensor.LIGHTNING:  # It's a lightning event
-                print(f"Strike Energy = {sensor.energy}")
-                print(f"Distance to storm front = {sensor.distance} km")
-            elif event_type == sensor.DISTURBER:
-                print("False alarm")
-        else:
-            print("No event detected")
-        # Minimum time between strike events is 1 second so poll frequently!
-        time.sleep(0.5)
+  interrupt_pin = board.D7  # Connected to the sensor interrupt pin
 
+  # For a SPI connection (recommended)
+  spi = board.SPI()  # Works for most Adafruit and Blinka boards
+  cs_pin = board.D5  # Connect to the sensor chip select pin
+  sensor = biffobear_as3935.AS3935(spi, cs_pin, interrupt_pin=interrupt_pin)
 
-For an I2C connection:
+  # For an I2C connection
+  # i2c = board.I2C()  # Works for most Adafruit and Blinka boards
+  # sensor = biffobear_as3935.AS3935_I2C(i2c, interrupt_pin=interrupt_pin)
 
-.. code-block:: python
-
-    import time
-    import board
-    import biffobear_as3935
-
-    i2c = board.I2C()  # Works for most Adafruit and Blinka boards.
-    # Edit the following pin to match the connections to your board.
-    interrupt_pin = board.D7  # Connected to the sensor interrupt pin.
-
-    sensor = biffobear_as3935.AS3935_I2C(i2c, interrupt_pin=interrupt_pin)
-
-    while True:
-        if sensor.interrupt_set:  # An event has occurred
-            # The interrupt_status is cleared after a read, so assign it
-            # to a variable in case you need the value later.
-            event_type = sensor.interrupt_status == sensor.LIGHTNING
-            if event_type == sensor.LIGHTNING:  # It's a lightning event
-                print(f"Strike Energy = {sensor.energy}")
-                print(f"Distance to storm front = {sensor.distance} km")
-            elif event_type == sensor.DISTURBER:
-                print("False alarm")
-        else:
-            print("No event detected")
-        # Minimum time between strike events is 1 second so poll frequently!
-        time.sleep(0.5)
+  while True:
+      if sensor.interrupt_set:  # An event has occurred
+          # The interrupt_status is cleared after a read, so assign it
+          # to a variable in case you need the value later.
+          event_type = sensor.interrupt_status == sensor.LIGHTNING
+          if event_type == sensor.LIGHTNING:  # It's a lightning event
+              print(f"Strike Energy = {sensor.energy}")
+              print(f"Distance to storm front = {sensor.distance} km")
+          elif event_type == sensor.DISTURBER:
+              print("False alarm")
+      else:
+          print("No event detected")
+      # Minimum time between strike events is 1 second so poll frequently!
+      time.sleep(0.5)
 
 
 Contributing

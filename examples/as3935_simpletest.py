@@ -18,7 +18,7 @@ interrupt_pin = board.D7  # Connected to the sensor interrupt pin
 # For a SPI connection (recommended)
 spi = board.SPI()  # Works for most Adafruit and Blinka boards
 cs_pin = board.D5  # Connect to the sensor chip select pin
-sensor = biffobear_as3935.AS3935_SPI(spi, cs_pin, interrupt_pin=interrupt_pin)
+sensor = biffobear_as3935.AS3935(spi, cs_pin, interrupt_pin=interrupt_pin)
 
 # For an I2C connection
 # i2c = board.I2C()  # Works for most Adafruit and Blinka boards
@@ -34,7 +34,7 @@ while True:
             print(f"Distance to storm front = {sensor.distance} km")
         elif event_type == sensor.DISTURBER:
             print("False alarm")
-        else:
-            print("No event detected")
+    else:
+        print("No event detected")
     # Minimum time between strike events is 1 second so poll frequently!
     time.sleep(0.5)

@@ -103,7 +103,7 @@ def _value_is_in_range(value, *, lo_limit, hi_limit):
     return value
 
 
-class AS3935:
+class _AS3935:
     """Driver for the Franklin AS3935 lightning detector chip.
 
     :param ~board.Pin interrupt_pin: The pin connected to the chip's interrupt line. Note
@@ -480,7 +480,7 @@ class AS3935:
         self._check_clock_calibration()
 
 
-class AS3935_I2C(AS3935):
+class AS3935_I2C(_AS3935):
     """Driver for the Franklin AS3935 with an I2C connection.
 
     :param busio.I2C i2c: The I2C bus connected to the chip.
@@ -518,7 +518,7 @@ class AS3935_I2C(AS3935):
         return _BUFFER[0]
 
 
-class AS3935_SPI(AS3935):
+class AS3935(_AS3935):
     """Driver for the Franklin AS3935 with a SPI connection.
 
     :param busio.SPI spi: The SPI bus connected to the chip.  Ensure SCK, MOSI, and MISO are
