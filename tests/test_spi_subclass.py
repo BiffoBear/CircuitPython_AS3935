@@ -35,7 +35,7 @@ from CircuitPython_AS3935 import biffobear_as3935 as as3935
 def test_as3935_instantiated_with_correct_args_from_as3935_spi(
     mocker, spi, cs_pin_in, cs_pin_out, baud, spibus, int_pin
 ):
-    assert issubclass(as3935.AS3935_SPI, as3935.AS3935)
+    assert issubclass(as3935.AS3935, as3935._AS3935)
     mock_cs_pin = mocker.Mock(name=cs_pin_in)
     mock_digitalio = mocker.patch.object(
         as3935.digitalio, "DigitalInOut", return_value=cs_pin_out
@@ -44,9 +44,9 @@ def test_as3935_instantiated_with_correct_args_from_as3935_spi(
         as3935.spi_dev, "SPIDevice", return_value=spibus
     )
     mock_as3935_init = mocker.patch.object(
-        as3935.AS3935, "__init__", autospec=True, return_value=None
+        as3935._AS3935, "__init__", autospec=True, return_value=None
     )
-    as3935.AS3935_SPI(spi, mock_cs_pin, baud, interrupt_pin=int_pin)
+    as3935.AS3935(spi, mock_cs_pin, baud, interrupt_pin=int_pin)
     # Check that cs pin converted to a DigitalInOut object
     mock_digitalio.assert_called_once_with(mock_cs_pin)
     # Confirm SPIDevice called with correct values
@@ -54,7 +54,7 @@ def test_as3935_instantiated_with_correct_args_from_as3935_spi(
         spi, cs_pin_out, baudrate=baud, polarity=1, phase=0
     )
     mocker.resetall()
-    test_as3935 = as3935.AS3935_SPI(spi, mock_cs_pin, interrupt_pin=int_pin)
+    test_as3935 = as3935.AS3935(spi, mock_cs_pin, interrupt_pin=int_pin)
     # Confirm that SPIDevice is called with a default baudreate
     default_spi_baudrate = 1_000_000
     mock_spidevice.assert_called_once_with(
@@ -75,12 +75,14 @@ def test_write_byte_out_sets_correct_bits_for_write_address_and_sends_correect_d
 ):
     mock_sleep = mocker.patch.object(as3935.time, "sleep", autospec=True)
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
-    mock_as3935_init = mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
+    mock_as3935_init = mocker.patch.object(
+        as3935._AS3935, "__init__", return_value=None
+    )
     mock_spidevice = mocker.patch.object(
         as3935.spi_dev, "SPIDevice", autospec=True, return_value=mocker.MagicMock()
     )
     test_register = as3935._Register(addr, 0x55, 0x00)
-    test_as3935_spi = as3935.AS3935_SPI("spi", "cs_pin", interrupt_pin="int_pin")
+    test_as3935_spi = as3935.AS3935("spi", "cs_pin", interrupt_pin="int_pin")
     test_as3935_spi._write_byte_out(test_register, data_byte)
     # Check that SPIDevice.write is called with the write bits set in the register address
     assert as3935._BUFFER[0] == buffer
@@ -100,12 +102,14 @@ def test_read_byte_in_sets_correct_bits_for_read_address_and_sends_correect_data
 ):
     mock_sleep = mocker.patch.object(as3935.time, "sleep", autospec=True)
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
-    mock_as3935_init = mocker.patch.object(as3935.AS3935, "__init__", return_value=None)
+    mock_as3935_init = mocker.patch.object(
+        as3935._AS3935, "__init__", return_value=None
+    )
     mock_spidevice = mocker.patch.object(
         as3935.spi_dev, "SPIDevice", autospec=True, return_value=mocker.MagicMock()
     )
     test_register = as3935._Register(addr, 0x55, 0x00)
-    test_as3935_spi = as3935.AS3935_SPI("spi", "cs_pin", interrupt_pin="int_pin")
+    test_as3935_spi = as3935.AS3935("spi", "cs_pin", interrupt_pin="int_pin")
     test_as3935_spi._read_byte_in(test_register)
     name, args, kwargs = test_as3935_spi._bus.__enter__.return_value.mock_calls[0]
     assert name == "write"
