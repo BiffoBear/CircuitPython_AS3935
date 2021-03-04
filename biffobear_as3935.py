@@ -110,10 +110,6 @@ class _AS3935:
         that CircuitPython currently does not support interrupts, but the line is held high
         for at least one second per event, so it may be polled. Some single board computers,
         e.g. the Raspberry Pi, do support interrupts.
-<<<<<<< HEAD
-
-=======
->>>>>>> dev
     """
 
     # Constants to make register values human readable in the code
