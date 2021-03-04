@@ -35,7 +35,7 @@ from CircuitPython_AS3935 import biffobear_as3935 as as3935
 def test_as3935_instantiated_with_correct_args_from_as3935_spi(
     mocker, spi, cs_pin_in, cs_pin_out, baud, spibus, int_pin
 ):
-    assert issubclass(as3935.AS3935, as3935._AS3935)
+    assert issubclass(as3935.AS3935, as3935.AS3935_Sensor)
     mock_cs_pin = mocker.Mock(name=cs_pin_in)
     mock_digitalio = mocker.patch.object(
         as3935.digitalio, "DigitalInOut", return_value=cs_pin_out
@@ -44,7 +44,7 @@ def test_as3935_instantiated_with_correct_args_from_as3935_spi(
         as3935.spi_dev, "SPIDevice", return_value=spibus
     )
     mock_as3935_init = mocker.patch.object(
-        as3935._AS3935, "__init__", autospec=True, return_value=None
+        as3935.AS3935_Sensor, "__init__", autospec=True, return_value=None
     )
     as3935.AS3935(spi, mock_cs_pin, baud, interrupt_pin=int_pin)
     # Check that cs pin converted to a DigitalInOut object
@@ -76,7 +76,7 @@ def test_write_byte_out_sets_correct_bits_for_write_address_and_sends_correect_d
     mock_sleep = mocker.patch.object(as3935.time, "sleep", autospec=True)
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
     mock_as3935_init = mocker.patch.object(
-        as3935._AS3935, "__init__", return_value=None
+        as3935.AS3935_Sensor, "__init__", return_value=None
     )
     mock_spidevice = mocker.patch.object(
         as3935.spi_dev, "SPIDevice", autospec=True, return_value=mocker.MagicMock()
@@ -103,7 +103,7 @@ def test_read_byte_in_sets_correct_bits_for_read_address_and_sends_correect_data
     mock_sleep = mocker.patch.object(as3935.time, "sleep", autospec=True)
     mocker.patch.object(as3935.digitalio, "DigitalInOut")
     mock_as3935_init = mocker.patch.object(
-        as3935._AS3935, "__init__", return_value=None
+        as3935.AS3935_Sensor, "__init__", return_value=None
     )
     mock_spidevice = mocker.patch.object(
         as3935.spi_dev, "SPIDevice", autospec=True, return_value=mocker.MagicMock()

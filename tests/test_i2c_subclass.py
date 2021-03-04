@@ -18,12 +18,12 @@ from CircuitPython_AS3935 import biffobear_as3935 as as3935
 def test_as3935_AS3935_I2C_instantiated_with_correct_args(
     mocker, i2c, i2cbus, address, int_pin
 ):
-    assert issubclass(as3935.AS3935_I2C, as3935._AS3935)
+    assert issubclass(as3935.AS3935_I2C, as3935.AS3935_Sensor)
     mock_i2cdevice = mocker.patch.object(
         as3935.i2c_dev, "I2CDevice", return_value=i2cbus
     )
     mock_as3935_init = mocker.patch.object(
-        as3935._AS3935, "__init__", autospec=True, return_value=None
+        as3935.AS3935_Sensor, "__init__", autospec=True, return_value=None
     )
     as3935.AS3935_I2C(i2c, address, interrupt_pin=int_pin)
     # Confirm that I2CDevice called with correct values
@@ -49,7 +49,7 @@ def test_write_byte_out_calls_i2c_dev_write_with_correct_kwargs(
     )
     mock_sleep = mocker.patch.object(as3935.time, "sleep", autospec=True)
     mock_as3935_init = mocker.patch.object(
-        as3935._AS3935, "__init__", return_value=None
+        as3935.AS3935_Sensor, "__init__", return_value=None
     )
     mock_i2cdevice = mocker.patch.object(
         as3935.i2c_dev, "I2CDevice", autospec=True, return_value=mocker.MagicMock()
@@ -72,7 +72,7 @@ def test_read_byte_in_calls_i2c_dev_write_then_readinto_with_correct_args(
     assert as3935.AS3935_I2C._read_byte_in.__qualname__ == "AS3935_I2C._read_byte_in"
     mock_sleep = mocker.patch.object(as3935.time, "sleep", autospec=True)
     mock_as3935_init = mocker.patch.object(
-        as3935._AS3935, "__init__", return_value=None
+        as3935.AS3935_Sensor, "__init__", return_value=None
     )
     mock_i2cdevice = mocker.patch.object(
         as3935.i2c_dev, "I2CDevice", autospec=True, return_value=mocker.MagicMock()
