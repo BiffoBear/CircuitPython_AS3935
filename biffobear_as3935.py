@@ -199,8 +199,8 @@ class AS3935_Sensor:
 
     @property
     def watchdog(self):
-        """int: Watchdog thresholdin the range 0 - 10 (default is 2). Higher thresholds reduce
-        triggers by disturbers but decrease sensitivity to lightning strikes.
+        """int: Watchdog threshold in the range 0 - 10 (default is 2). Higher thresholds reduce
+        triggers from disturbers but decrease sensitivity to lightning strikes.
         """
         return self._get_register(self._WDTH)
 
