@@ -18,30 +18,23 @@ the lib folder.
 import os
 import time
 
-try:
-    import pytest
-except ImportError:
-    pass
-import board
-
-try:
-    from CircuitPython_AS3935 import biffobear_as3935 as as3935
-except ImportError:
-    import biffobear_as3935 as as3935
-
-# All tests skipped unless environment variable SENSOR_ATTACHED is set to any value.
+# If the board is attached to the Raspberry Pi pytest will import
 try:
     sensor_attached = os.environ["SENSOR_ATTACHED"]
+    import pytest
+    from CircuitPython_AS3935 import biffobear_as3935 as as3935
+    import board
 except (KeyError, AttributeError):
-    sensor_attached = False
-
-try:
-    pytestmark = pytest.mark.skipif(
-        sensor_attached not in ["SPI", "I2C"], reason="No as3935 board connected."
-    )
-except NameError:
-    pass
-
+    # env not set, so try to skip tests (exception if not attached to Pi)
+    try:
+        pytestmark = pytest.mark.skipfile(reason="No as3935 board connected.")
+    except NameError:
+        # No pytest, so not attached to Pi
+        pass
+except ImportError:
+    # Sensor attached to an ItsyBitsyM4
+    import biffobear_as3935 as as3935
+    import board
 
 device = None
 
@@ -49,7 +42,17 @@ device = None
 def setup_module():
     # Returns an instance of the AS3935 driver
     global device
-    if sensor_attached == "SPI":
+    # Look for I2C connected sensor
+    try:
+        print("Setting up I2C connection...")
+        i2c = board.I2C()
+        try:
+            interrupt = board.D25
+        except AttributeError:
+            interrupt = board.D7
+        device = as3935.AS3935_I2C(i2c, interrupt_pin=interrupt)
+    except ValueError:
+        print("No I2C connection found.")
         print("Setting up SPI connection...")
         spi = board.SPI()
         try:
@@ -59,15 +62,6 @@ def setup_module():
             cs = board.D5
             interrupt = board.D7
         device = as3935.AS3935(spi, cs, interrupt_pin=interrupt)
-
-    else:
-        print("Setting up I2C connection...")
-        i2c = board.I2C()
-        try:
-            interrupt = board.D25
-        except AttributeError:
-            interrupt = board.D7
-        device = as3935.AS3935_I2C(i2c, interrupt_pin=interrupt)
 
 
 def teardown_module():
