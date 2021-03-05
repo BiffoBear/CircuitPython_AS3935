@@ -403,7 +403,7 @@ def test_power_down_setter_false_and_power_is_down(
     # If turning on power after power_down was previously set, clocks must be calibrated.
     get_reg.return_value = 0x01
     mock_calibrate_clocks = mocker.patch.object(
-        as3935.AS3935_Sensor, "_calibrate_clocks", autospec=True
+        as3935.AS3935_Sensor, "calibrate_clocks", autospec=True
     )
     mock_check_clock_calibration = mocker.patch.object(
         as3935.AS3935_Sensor, "_check_clock_calibration", autospec=True
@@ -430,7 +430,7 @@ def test_power_down_setter_false_and_power_is_up(mocker, set_reg, get_reg, test_
     # If turning on power with power already on then do nothing.
     get_reg.return_value = 0x00
     mock_calibrate_clocks = mocker.patch.object(
-        as3935.AS3935_Sensor, "_calibrate_clocks", autospec=True
+        as3935.AS3935_Sensor, "calibrate_clocks", autospec=True
     )
     test_device.power_down = False
     get_reg.assert_called_once_with(test_device, as3935.AS3935_Sensor._PWD)
@@ -565,7 +565,7 @@ def test_calibrate_clocks_calls_correct_register_then_checks_calibration(
     mock_check_clock_calibration = mocker.patch.object(
         as3935.AS3935_Sensor, "_check_clock_calibration"
     )
-    test_device._calibrate_clocks()
+    test_device.calibrate_clocks()
     set_reg.assert_called_once_with(test_device, as3935.AS3935_Sensor._CALIB_RCO, 0x96)
     mock_check_clock_calibration.assert_called_once()
 
@@ -640,7 +640,7 @@ def test_startup_checks(mocker):
         as3935.AS3935_Sensor, "reset", autospec=True, return_value=None
     )
     mock_calibrate_clocks = mocker.patch.object(
-        as3935.AS3935_Sensor, "_calibrate_clocks", autospec=True, return_value=None
+        as3935.AS3935_Sensor, "calibrate_clocks", autospec=True, return_value=None
     )
     mock_check_clock_calibration = mocker.patch.object(
         as3935.AS3935_Sensor,

@@ -98,13 +98,13 @@ def _value_is_in_range(value, *, lo_limit, hi_limit):
         assert lo_limit <= value <= hi_limit
     except AssertionError as error:
         raise ValueError(
-            "Value must be in the range %s to %s inclusive." % (lo_limit, hi_limit)
+            "Value must be in the range %s to %s, inclusive." % (lo_limit, hi_limit)
         ) from error
     return value
 
 
 class AS3935_Sensor:
-    """Driver for the Franklin AS3935 lightning detector chip."""
+    """Register handling for the Franklin AS3935 PSI and I2C drivers."""
 
     # Constants to make register values human readable in the code
     DATA_PURGE = _0X00  # 0x00 - Distance recalculated after purging old data
@@ -199,8 +199,8 @@ class AS3935_Sensor:
 
     @property
     def watchdog(self):
-        """int: Watchdog thresholdin the range 0 - 10 (default is 2). Higher thresholds reduce
-        triggers by disturbers but decrease sensitivity to lightning strikes.
+        """int: Watchdog threshold in the range 0 - 10 (default is 2). Higher thresholds reduce
+        triggers from disturbers but decrease sensitivity to lightning strikes.
         """
         return self._get_register(self._WDTH)
 
@@ -265,7 +265,7 @@ class AS3935_Sensor:
         """int: Status of the interrupt register. These constants are defined as helpers:
         LIGHTNING, DISTURBER. NOISE, DATA_PURGE.
 
-        note:: This register is automatically cleared by the sensor after it is read.
+        Note: This register is automatically cleared by the sensor after it is read.
         """
         # Wait a minimum of 2 ms between the interrupt pin going high and reading the register
         time.sleep(0.0002)
@@ -330,7 +330,7 @@ class AS3935_Sensor:
             self._set_register(self._PWD, 0x00)
             # RCO clocks need to be calibrated when powering back up from a power_down
             # Procedure as per AS3935 datasheet
-            self._calibrate_clocks()
+            self.calibrate_clocks()
             self._check_clock_calibration()
             self._set_register(self._DISP_FLAGS, 0x02)
             time.sleep(0.002)
@@ -399,9 +399,9 @@ class AS3935_Sensor:
     @property
     def tuning_capacitance(self):
         """int: The tuning capacitance for the RLC antenna in pF. This capacitance
-        is added to the antenna to tune it within 3.5 % of 500 kHz (483 - 517 kHz).
+        is added to the antenna to tune it to within 3.5 % of 500 kHz (483 - 517 kHz).
 
-        Capacitance must be in the range 0 - 120. Any of these values may be set,
+        Capacitance must be in the range 0 - 120. Any of these values may be used,
         however, the capacitance is set in steps of 8 pF, so values less than 120
         will be rounded down to the nearest step. Default is 0.
         """
@@ -432,8 +432,9 @@ class AS3935_Sensor:
         if _0X01 in [trco_result, srco_result]:
             raise RuntimeError("AS3935 RCO clock calibration failed.")
 
-    def _calibrate_clocks(self):
-        """Recalibrate the internal clocks."""
+    def calibrate_clocks(self):
+        """Recalibrate the internal clocks. The clocks rely on the tuning frequency of
+        the antenna, so adjust that to 500 KHz +/- 3.5 % before calibrating."""
         # Send the direct command to the CALIB_RCO register to start automatic RCO calibration
         # then check that the calibration has succeeded
         self._set_register(self._CALIB_RCO, self.DIRECT_COMMAND)
@@ -466,7 +467,7 @@ class AS3935_Sensor:
         # checking the clock calibration status tells the that the clocks are OK and if
         # the calibration times out, we know that there are no comms with the sensor
         self.reset()
-        self._calibrate_clocks()
+        self.calibrate_clocks()
         self._check_clock_calibration()
 
 

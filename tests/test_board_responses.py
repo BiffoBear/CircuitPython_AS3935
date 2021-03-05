@@ -31,13 +31,13 @@ except ImportError:
 
 # All tests skipped unless environment variable SENSOR_ATTACHED is set to any value.
 try:
-    sensor_attached = int(os.environ["SENSOR_ATTACHED"])
+    sensor_attached = os.environ["SENSOR_ATTACHED"]
 except (KeyError, AttributeError):
     sensor_attached = False
 
 try:
     pytestmark = pytest.mark.skipif(
-        sensor_attached is False, reason="No as3935 board connected."
+        sensor_attached not in ["SPI", "I2C"], reason="No as3935 board connected."
     )
 except NameError:
     pass
@@ -48,18 +48,26 @@ device = None
 
 def setup_module():
     # Returns an instance of the AS3935 driver
-    print("Setting up SPI connection...")
     global device
-    spi = board.SPI()
-    try:
-        cs = board.D24
-        interrupt = board.D25
-    except AttributeError:
-        cs = board.D5
-        interrupt = board.D7
+    if sensor_attached == "SPI":
+        print("Setting up SPI connection...")
+        spi = board.SPI()
+        try:
+            cs = board.D24
+            interrupt = board.D25
+        except AttributeError:
+            cs = board.D5
+            interrupt = board.D7
+        device = as3935.AS3935(spi, cs, interrupt_pin=interrupt)
 
-    device = as3935.AS3935_SPI(spi, cs, interrupt_pin=interrupt)
-    device.reset()
+    else:
+        print("Setting up I2C connection...")
+        i2c = board.I2C()
+        try:
+            interrupt = board.D25
+        except AttributeError:
+            interrupt = board.D7
+        device = as3935.AS3935_I2C(i2c, interrupt_pin=interrupt)
 
 
 def teardown_module():
@@ -165,7 +173,7 @@ def test_reset():
 def test_commands_which_do_not_change_readable_values():
     # Call to see if an exception is raised
     device.clear_stats()
-    device._calibrate_clocks()
+    device.calibrate_clocks()
 
 
 def test_registers_with_unpredictable_states():
@@ -184,6 +192,7 @@ if __name__ == "__main__":
 
     print("setup...")
     setup_module()
+    device.reset()
     print("test_indoor_outdoor...")
     test_indoor_outdoor()
     print("power_down...")
