@@ -29,7 +29,6 @@ Implementation Notes
 
 import time
 from collections import namedtuple
-from micropython import const
 import digitalio
 import adafruit_bus_device.spi_device as spi_dev
 import adafruit_bus_device.i2c_device as i2c_dev
@@ -42,48 +41,16 @@ __repo__ = "https://github.com/BiffoBear/Biffobear_CircuitPython_AS3935.git"
 _Register = namedtuple("Register", ["addr", "offset", "mask"])
 
 # Internal constants:
-# Constants for addresses and masks to reduce RAM usage
-_0X00 = const(0x00)
-_0X01 = const(0x01)
-_0X02 = const(0x02)
-_0X03 = const(0x03)
-_0X04 = const(0x04)
-_0X05 = const(0x05)
-_0X06 = const(0x06)
-_0X07 = const(0x07)
-_0X08 = const(0x08)
-_0X09 = const(0x09)
-_0X0A = const(0x0A)
-_0X0B = const(0x0B)
-_0X0E = const(0x0E)
-_0X0F = const(0x0F)
-_0X10 = const(0x10)
-_0X12 = const(0x12)
-_0X1F = const(0x1F)
-_0X20 = const(0x20)
-_0X30 = const(0x30)
-_0X3A = const(0x3A)
-_0X3B = const(0x3B)
-_0X3C = const(0x3C)
-_0X3D = const(0x3D)
-_0X3E = const(0x3E)
-_0X3F = const(0x3F)
-_0X40 = const(0x40)
-_0X70 = const(0x70)
-_0X80 = const(0x80)
-_0XC0 = const(0xC0)
-_0XE0 = const(0xE0)
-_0XFF = const(0xFF)
 
 # Valid inputs for strike count threshold and frequency divisor registers
-_LIGHTNING_COUNT = (_0X01, _0X05, _0X09, _0X10)
-_FREQ_DIVISOR = (_0X10, _0X20, _0X40, _0X80)
+_LIGHTNING_COUNT = (0x01, 0x05, 0x09, 0x10)
+_FREQ_DIVISOR = (0x10, 0x20, 0x40, 0x80)
 # Global buffer for bus data and address
 _BUFFER = bytearray(2)
 
 
 def _reg_value_from_choices(value, choices):
-    """Return the index of a value from an iterable."""
+    """Index of a value from an iterable."""
     try:
         return choices.index(value)
     except ValueError as error:
@@ -107,11 +74,11 @@ class AS3935_Sensor:
     """Register handling for the Franklin AS3935 PSI and I2C drivers."""
 
     # Constants to make register values human readable in the code
-    DATA_PURGE = _0X00  # 0x00 - Distance recalculated after purging old data
-    NOISE = _0X01  # 0x01 - INT_NH Noise level too high. Stays high while noise remains
-    DISTURBER = _0X04  # 0x04 - INT_D  Disturber detected
-    LIGHTNING = _0X08  # 0x08 - INT_L  Lightning strike
-    DIRECT_COMMAND = const(0x96)
+    DATA_PURGE = 0x00  # 0x00 - Distance recalculated after purging old data
+    NOISE = 0x01  # 0x01 - INT_NH Noise level too high. Stays high while noise remains
+    DISTURBER = 0x04  # 0x04 - INT_D  Disturber detected
+    LIGHTNING = 0x08  # 0x08 - INT_L  Lightning strike
+    DIRECT_COMMAND = 0x96
 
     # AS3935 registers
     # DISP_FLAGS combines DISP_LCO, DISP_SRCO and DISP_TRCO into a 3 bit register
@@ -124,34 +91,32 @@ class AS3935_Sensor:
     # XXXX_CALIB_NOK - Calibration completed unsuccessfully
 
     # _REGISTER_NAME = _Register(address, offset, mask)
-    _PWD = _Register(_0X00, _0X00, _0X01)  # Sensor power down state
-    _AFE_GB = _Register(_0X00, _0X01, _0X3E)  # AFE gain boost
-    _WDTH = _Register(_0X01, _0X00, _0X0F)  # Watchdog threshold
-    _NF_LEV = _Register(_0X01, _0X04, _0X70)  # Noise floor level
-    _SREJ = _Register(_0X02, _0X00, _0X0F)  # Spike rejection
-    _MIN_NUM_LIGH = _Register(_0X02, _0X04, _0X30)  # Minimum number of lightning
-    _CL_STAT = _Register(_0X02, _0X06, _0X40)  # Clear statistics
-    _INT = _Register(_0X03, _0X00, _0X0F)  # Interrupt
-    _MASK_DIST = _Register(_0X03, _0X05, _0X20)  # Mask disturber
+    _PWD = _Register(0x00, 0x00, 0x01)  # Sensor power down state
+    _AFE_GB = _Register(0x00, 0x01, 0x3E)  # AFE gain boost
+    _WDTH = _Register(0x01, 0x00, 0x0F)  # Watchdog threshold
+    _NF_LEV = _Register(0x01, 0x04, 0x70)  # Noise floor level
+    _SREJ = _Register(0x02, 0x00, 0x0F)  # Spike rejection
+    _MIN_NUM_LIGH = _Register(0x02, 0x04, 0x30)  # Minimum number of lightning
+    _CL_STAT = _Register(0x02, 0x06, 0x40)  # Clear statistics
+    _INT = _Register(0x03, 0x00, 0x0F)  # Interrupt
+    _MASK_DIST = _Register(0x03, 0x05, 0x20)  # Mask disturber
     _LCO_FDIV = _Register(
-        _0X03, _0X06, _0XC0
+        0x03, 0x06, 0xC0
     )  # Frequency division ratio for antenna tuning
-    _S_LIG_L = _Register(_0X04, _0X00, _0XFF)  # Energy of single lightning LSBYTE
-    _S_LIG_M = _Register(_0X05, _0X00, _0XFF)  # Energy of single lightning MSBYTE
-    _S_LIG_MM = _Register(_0X06, _0X00, _0X1F)  # Energy of single lightning MMSBYTE
-    _DISTANCE = _Register(_0X07, _0X00, _0X3F)  # Distance estimation
-    _TUN_CAP = _Register(_0X08, _0X00, _0X0F)  # Internal tuning capacitance
+    _S_LIG_L = _Register(0x04, 0x00, 0xFF)  # Energy of single lightning LSBYTE
+    _S_LIG_M = _Register(0x05, 0x00, 0xFF)  # Energy of single lightning MSBYTE
+    _S_LIG_MM = _Register(0x06, 0x00, 0x1F)  # Energy of single lightning MMSBYTE
+    _DISTANCE = _Register(0x07, 0x00, 0x3F)  # Distance estimation
+    _TUN_CAP = _Register(0x08, 0x00, 0x0F)  # Internal tuning capacitance
     _DISP_FLAGS = _Register(
-        _0X08, _0X05, _0XE0
+        0x08, 0x05, 0xE0
     )  # Display flags for output to interrupt pin
-    _TRCO_CALIB = _Register(_0X3A, _0X06, _0XC0)  # TRCO calibration result
-    _SRCO_CALIB = _Register(_0X3B, _0X06, _0XC0)  # SRCO calibration result
+    _TRCO_CALIB = _Register(0x3A, 0x06, 0xC0)  # TRCO calibration result
+    _SRCO_CALIB = _Register(0x3B, 0x06, 0xC0)  # SRCO calibration result
     _PRESET_DEFAULT = _Register(
-        _0X3C, _0X00, _0XFF
+        0x3C, 0x00, 0xFF
     )  # Set this to 0x96 to reset the sensor
-    _CALIB_RCO = _Register(
-        _0X3D, _0X00, _0XFF
-    )  # Set this to 0x96 to calibrate the clocks
+    _CALIB_RCO = _Register(0x3D, 0x00, 0xFF)  # Set this to 0x96 to calibrate the clocks
 
     def __init__(self, *, interrupt_pin):
         self._interrupt_pin = digitalio.DigitalInOut(interrupt_pin)
@@ -176,7 +141,7 @@ class AS3935_Sensor:
         register_byte = self._read_byte_in(register)
         # pylint: enable=assignment-from-no-return
         register_byte &= ~register.mask
-        register_byte |= (value << register.offset) & _0XFF
+        register_byte |= (value << register.offset) & 0xFF
         self._write_byte_out(register, register_byte)
 
     @property
@@ -185,7 +150,7 @@ class AS3935_Sensor:
         and False if the sensor is used outdoors.  Default is True.
         """
         # Register _AFE_GB is set to 0x12 for Indoor mode and 0x0e for outdoor mode
-        if self._get_register(self._AFE_GB) == _0X12:
+        if self._get_register(self._AFE_GB) == 0x12:
             return True
         return False
 
@@ -193,9 +158,9 @@ class AS3935_Sensor:
     def indoor(self, value):
         assert isinstance(value, bool)
         if value:
-            self._set_register(self._AFE_GB, _0X12)
+            self._set_register(self._AFE_GB, 0x12)
         else:
-            self._set_register(self._AFE_GB, _0X0E)
+            self._set_register(self._AFE_GB, 0x0E)
 
     @property
     def watchdog(self):
@@ -207,7 +172,7 @@ class AS3935_Sensor:
     @watchdog.setter
     def watchdog(self, value):
         self._set_register(
-            self._WDTH, _value_is_in_range(value, lo_limit=_0X00, hi_limit=_0X0A)
+            self._WDTH, _value_is_in_range(value, lo_limit=0x00, hi_limit=0x0A)
         )
 
     @property
@@ -221,7 +186,7 @@ class AS3935_Sensor:
     @noise_floor_limit.setter
     def noise_floor_limit(self, value):
         self._set_register(
-            self._NF_LEV, _value_is_in_range(value, lo_limit=_0X00, hi_limit=_0X07)
+            self._NF_LEV, _value_is_in_range(value, lo_limit=0x00, hi_limit=0x07)
         )
 
     @property
@@ -233,9 +198,9 @@ class AS3935_Sensor:
 
     @spike_threshold.setter
     def spike_threshold(self, value):
-        assert _0X00 <= value <= _0X0B
+        assert 0x00 <= value <= 0x0B
         self._set_register(
-            self._SREJ, _value_is_in_range(value, lo_limit=_0X00, hi_limit=_0X0B)
+            self._SREJ, _value_is_in_range(value, lo_limit=0x00, hi_limit=0x0B)
         )
 
     @property
@@ -410,7 +375,7 @@ class AS3935_Sensor:
     @tuning_capacitance.setter
     def tuning_capacitance(self, value):
         self._set_register(
-            self._TUN_CAP, _value_is_in_range(value, lo_limit=_0X00, hi_limit=120) // 8
+            self._TUN_CAP, _value_is_in_range(value, lo_limit=0x00, hi_limit=120) // 8
         )
 
     def _check_clock_calibration(self):
@@ -421,15 +386,15 @@ class AS3935_Sensor:
         # Use a timeout in case the caliration register is never set (e.g. due to no comms
         # with the sensor)
         start = time.monotonic()
-        trco_result, srco_result = _0X00, _0X00
+        trco_result, srco_result = 0x00, 0x00
         while not (trco_result and srco_result):
-            if time.monotonic() - start > _0X01:
+            if time.monotonic() - start > 0x01:
                 raise OSError(
                     "Problem communicating with the sensor. Check your wiring."
                 )
             trco_result = self._get_register(self._TRCO_CALIB)
             srco_result = self._get_register(self._SRCO_CALIB)
-        if _0X01 in [trco_result, srco_result]:
+        if 0x01 in [trco_result, srco_result]:
             raise RuntimeError("AS3935 RCO clock calibration failed.")
 
     def calibrate_clocks(self):
@@ -534,7 +499,7 @@ class AS3935(AS3935_Sensor):
         # AS3935 chip returns unexpected 0x00s intermittently
         # Short pause to space out consecutive calls
         time.sleep(0.01)
-        _BUFFER[0] = register.addr & _0X3F  # Set bits 15 and 14 to 00 - write
+        _BUFFER[0] = register.addr & 0x3F  # Set bits 15 and 14 to 00 - write
         _BUFFER[1] = data
         with self._bus as bus:
             bus.write(_BUFFER, end=2)
@@ -544,7 +509,7 @@ class AS3935(AS3935_Sensor):
         # AS3935 chip returns unexpected 0x00s intermittently
         # Short pause to space out consecutive calls
         time.sleep(0.01)
-        _BUFFER[0] = (register.addr & _0X3F) | _0X40  # Set bits 15 and 14 to 01 - read
+        _BUFFER[0] = (register.addr & 0x3F) | 0x40  # Set bits 15 and 14 to 01 - read
         with self._bus as bus:
             bus.write(_BUFFER, end=1)
             bus.readinto(_BUFFER, end=1)

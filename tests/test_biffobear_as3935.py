@@ -40,6 +40,7 @@ def test_register():
     return as3935._Register(0x01, 0x04, 0b0111_0000)
 
 
+@pytest.mark.skip
 def test_register_onstants():
     assert as3935._0X00 == 0x00
     assert as3935._0X01 == 0x01
