@@ -59,6 +59,10 @@ def _reg_value_from_choices(value, choices):
 def _value_is_in_range(value, *, lo_limit, hi_limit):
     """Check value is in range."""
     try:
+        assert isinstance(value, int)
+    except AssertionError as error:
+        raise TypeError("Value must be an integer") from error
+    try:
         assert lo_limit <= value <= hi_limit
     except AssertionError as error:
         raise ValueError(

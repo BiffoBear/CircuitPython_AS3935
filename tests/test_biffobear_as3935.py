@@ -194,18 +194,25 @@ def test_set_register(
 
 
 @pytest.mark.parametrize("value, register_value", [(2, 0), (3, 1), (5, 2)])
-def test_select_reg_value_from_choices_returns_correct_value(value, register_value):
+def test_reg_value_from_choices_returns_correct_value(value, register_value):
     assert as3935._reg_value_from_choices(value, (2, 3, 5)) == register_value
 
 
-def test_reg_value_from_choices_handles_invalid_args():
+@pytest.mark.parametrize("bad_arg", [1, "x", 1.1])
+def test_reg_value_from_choices_handles_invalid_args(bad_arg):
     with pytest.raises(ValueError):
-        as3935._reg_value_from_choices(1, (2, 3, 5))
+        as3935._reg_value_from_choices(bad_arg, (2, 3, 5))
 
 
 @pytest.mark.parametrize("value", [0, 5, 8])
 def test_value_is_in_range_returns_correct_value(value):
     assert as3935._value_is_in_range(value, lo_limit=0, hi_limit=8) == value
+
+
+@pytest.mark.parametrize("value", [1.1, "9", b"a"])
+def test_value_is_in_range_handles_incorrect_type(value):
+    with pytest.raises(TypeError):
+        as3935._value_is_in_range(value, lo_limit=0, hi_limit=8)
 
 
 @pytest.mark.parametrize("value", [-1, 9])
