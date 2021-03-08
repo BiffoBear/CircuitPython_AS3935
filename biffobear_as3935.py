@@ -50,7 +50,8 @@ _BUFFER = bytearray(2)
 
 
 def _reg_value_from_choices(value, choices):
-    """Index of a value from an iterable."""
+    """Index of a value."""
+    # Returns the index of a value in an iterable
     try:
         return choices.index(value)
     except ValueError as error:
@@ -60,7 +61,7 @@ def _reg_value_from_choices(value, choices):
 
 
 def _value_is_in_range(value, *, lo_limit, hi_limit):
-    """Return the value if it is within the range lo_limit to hi_limit inclusive."""
+    """Check value is in range."""
     try:
         assert lo_limit <= value <= hi_limit
     except AssertionError as error:
@@ -71,7 +72,7 @@ def _value_is_in_range(value, *, lo_limit, hi_limit):
 
 
 class AS3935_Sensor:
-    """Register handling for the Franklin AS3935 PSI and I2C drivers."""
+    """Register handling for the Franklin AS3935 SPI and I2C drivers."""
 
     # Constants to make register values human readable in the code
     DATA_PURGE = 0x00  # 0x00 - Distance recalculated after purging old data
@@ -379,7 +380,7 @@ class AS3935_Sensor:
         )
 
     def _check_clock_calibration(self):
-        """Check that clock calibration was successful."""
+        """Check clock calibration was successful."""
         # trco_result and srco_result are 0x00 until the calibration is complete
         # For each clock, the respective register is set to 0x01 for failure and to 0x02
         # for success
