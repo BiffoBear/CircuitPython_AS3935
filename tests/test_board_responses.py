@@ -15,26 +15,24 @@ the lib folder.
 # Therefore skip this file.
 # pylint: skip-file
 
-import os
 import time
 
-# If the board is attached to the Raspberry Pi pytest will import
 try:
-    sensor_attached = os.environ["SENSOR_ATTACHED"]
-    import pytest
+    import pytest  # If this works, we're on a Raspberry Pi
+    import os
     from CircuitPython_AS3935 import biffobear_as3935 as as3935
-    import board
-except (KeyError, AttributeError):
-    # env not set, so try to skip tests (exception if not attached to Pi)
-    try:
-        pytestmark = pytest.mark.skipfile(reason="No as3935 board connected.")
-    except NameError:
-        # No pytest, so not attached to Pi
-        pass
+
+    #     try:
+    #         sensor_attached = os.environ["SENSOR_ATTACHED"]
+    #     except (KeyError, AttributeError):
+    pytestmark = pytest.mark.skip(reason="No as3935 board connected.")
+    print("hello world")
+
 except ImportError:
-    # Sensor attached to an ItsyBitsyM4
+    # Deduce that pytest didn't import, so we are running on a board
     import biffobear_as3935 as as3935
-    import board
+
+import board
 
 device = None
 
