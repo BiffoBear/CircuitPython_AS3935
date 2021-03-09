@@ -40,44 +40,30 @@ def test_register():
     return as3935._Register(0x01, 0x04, 0b0111_0000)
 
 
-@pytest.mark.skip
 def test_register_onstants():
-    assert as3935._0X00 == 0x00
-    assert as3935._0X01 == 0x01
-    assert as3935._0X02 == 0x02
-    assert as3935._0X03 == 0x03
-    assert as3935._0X04 == 0x04
-    assert as3935._0X05 == 0x05
-    assert as3935._0X06 == 0x06
-    assert as3935._0X07 == 0x07
-    assert as3935._0X08 == 0x08
-    assert as3935._0X09 == 0x09
-    assert as3935._0X0A == 0x0A
-    assert as3935._0X0B == 0x0B
-    assert as3935._0X0E == 0x0E
-    assert as3935._0X0F == 0x0F
-    assert as3935._0X10 == 0x10
-    assert as3935._0X12 == 0x12
-    assert as3935._0X1F == 0x1F
-    assert as3935._0X20 == 0x20
-    assert as3935._0X30 == 0x30
-    assert as3935._0X3A == 0x3A
-    assert as3935._0X3B == 0x3B
-    assert as3935._0X3C == 0x3C
-    assert as3935._0X3D == 0x3D
-    assert as3935._0X3E == 0x3E
-    assert as3935._0X3F == 0x3F
-    assert as3935._0X40 == 0x40
-    assert as3935._0X70 == 0x70
-    assert as3935._0X80 == 0x80
-    assert as3935._0XC0 == 0xC0
-    assert as3935._0XE0 == 0xE0
-    assert as3935._0XFF == 0xFF
+    assert as3935.AS3935_Sensor._0X00 == 0x00
+    assert as3935.AS3935_Sensor._0X01 == 0x01
+    assert as3935.AS3935_Sensor._0X02 == 0x02
+    assert as3935.AS3935_Sensor._0X03 == 0x03
+    assert as3935.AS3935_Sensor._0X04 == 0x04
+    assert as3935.AS3935_Sensor._0X05 == 0x05
+    assert as3935.AS3935_Sensor._0X06 == 0x06
+    assert as3935.AS3935_Sensor._0X07 == 0x07
+    assert as3935.AS3935_Sensor._0X08 == 0x08
+    assert as3935.AS3935_Sensor._0X0B == 0x0B
+    assert as3935.AS3935_Sensor._0X0F == 0x0F
+    assert as3935.AS3935_Sensor._0X10 == 0x10
+    assert as3935.AS3935_Sensor._0X12 == 0x12
+    assert as3935.AS3935_Sensor._0X20 == 0x20
+    assert as3935.AS3935_Sensor._0X3F == 0x3F
+    assert as3935.AS3935_Sensor._0X40 == 0x40
+    assert as3935.AS3935_Sensor._0XC0 == 0xC0
+    assert as3935.AS3935_Sensor._0XFF == 0xFF
 
 
 def test_other_constants():
-    assert as3935._LIGHTNING_COUNT == (1, 5, 9, 16)
-    assert as3935._FREQ_DIVISOR == (16, 32, 64, 128)
+    assert as3935.AS3935_Sensor._LIGHTNING_COUNT == (1, 5, 9, 16)
+    assert as3935.AS3935_Sensor._FREQ_DIVISOR == (16, 32, 64, 128)
     # 0x00 - Distance recalculated after purging old data.
     assert as3935.AS3935_Sensor.DATA_PURGE == 0x00
     # 0x01 - INT_NH Noise level too high. Stays high while noise remains.
@@ -208,18 +194,25 @@ def test_set_register(
 
 
 @pytest.mark.parametrize("value, register_value", [(2, 0), (3, 1), (5, 2)])
-def test_select_reg_value_from_choices_returns_correct_value(value, register_value):
+def test_reg_value_from_choices_returns_correct_value(value, register_value):
     assert as3935._reg_value_from_choices(value, (2, 3, 5)) == register_value
 
 
-def test_reg_value_from_choices_handles_invalid_args():
+@pytest.mark.parametrize("bad_arg", [1, "x", 1.1])
+def test_reg_value_from_choices_handles_invalid_args(bad_arg):
     with pytest.raises(ValueError):
-        as3935._reg_value_from_choices(1, (2, 3, 5))
+        as3935._reg_value_from_choices(bad_arg, (2, 3, 5))
 
 
 @pytest.mark.parametrize("value", [0, 5, 8])
 def test_value_is_in_range_returns_correct_value(value):
     assert as3935._value_is_in_range(value, lo_limit=0, hi_limit=8) == value
+
+
+@pytest.mark.parametrize("value", [1.1, "9", b"a"])
+def test_value_is_in_range_handles_incorrect_type(value):
+    with pytest.raises(TypeError):
+        as3935._value_is_in_range(value, lo_limit=0, hi_limit=8)
 
 
 @pytest.mark.parametrize("value", [-1, 9])
@@ -295,7 +288,7 @@ def test_spike_threshold_setter(set_reg, test_device, value, out_of_range_value)
     test_device.spike_threshold = value
     set_reg.assert_called_once_with(test_device, as3935.AS3935_Sensor._SREJ, value)
     # Test with out_of_range_values just outside acceptable range
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         test_device.spike_threshold = out_of_range_value
 
 
