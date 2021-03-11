@@ -42,9 +42,6 @@ or individual libraries can be installed using
 
 Installing from PyPI
 =====================
-.. note:: This library is not available on PyPI yet. Install documentation is included
-    as a standard element. Stay tuned for PyPI availability!
-
 On supported GNU/Linux systems like the Raspberry Pi, you can install the driver locally `from
 PyPI <https://pypi.org/project/adafruit-circuitpython-as3935/>`_.
 To install for current user:
@@ -118,7 +115,7 @@ For a SPI connection:
       if sensor.interrupt_set:  # An event has occurred
           # The interrupt_status is cleared after a read, so assign it
           # to a variable in case you need the value later.
-          event_type = sensor.interrupt_status == sensor.LIGHTNING
+          event_type = sensor.interrupt_status
           if event_type == sensor.LIGHTNING:  # It's a lightning event
               print(f"Strike Energy = {sensor.energy}")
               print(f"Distance to storm front = {sensor.distance} km")
