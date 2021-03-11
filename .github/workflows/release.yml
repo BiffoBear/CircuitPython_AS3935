@@ -78,7 +78,7 @@ jobs:
     - name: Build and publish
       if: contains(steps.need-pypi.outputs.setup-py, 'setup.py')
       env:
-        TWINE_USERNAME: $'__token__'
+        TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI }}
       run: |
         python setup.py sdist
