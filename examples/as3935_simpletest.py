@@ -28,7 +28,7 @@ while True:
     if sensor.interrupt_set:  # An event has occurred
         # The interrupt_status is cleared after a read, so assign it
         # to a variable in case you need the value later.
-        event_type = sensor.interrupt_status == sensor.LIGHTNING
+        event_type = sensor.interrupt_status
         if event_type == sensor.LIGHTNING:  # It's a lightning event
             print(f"Strike Energy = {sensor.energy}")
             print(f"Distance to storm front = {sensor.distance} km")
